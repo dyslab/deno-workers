@@ -1,4 +1,4 @@
-# xlsx2cxv-demo: A Deno Worker Demo For XLSX File To CSV File Conversion
+# xlsx2csv-demo: A Deno Worker Demo For XLSX File To CSV File Conversion
 
 ## Importing Xlsx Package in Deno Project
 
