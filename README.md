@@ -6,7 +6,7 @@ Each subfolder of this project connects to a deno worker demo.
 
 ## Subfolders / Worker projects
 
-1. **[XLSX File To CSV File Demo](./xlsx2cxv-demo/)**: This is a demo to upload a xlsx file and then convert to a csv file for downloading. It purpose to be a basic deno snippet for xlsx file middleware / processor.
+1. **[XLSX File To CSV File Demo](./xlsx2csv-demo/)**: This is a demo to upload a xlsx file and then convert to a csv file for downloading. It purpose to be a basic deno snippet for xlsx file middleware / processor.
 
 ## Deno Installation
 
