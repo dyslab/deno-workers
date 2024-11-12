@@ -4,6 +4,7 @@
     "deploy": "deployctl deploy --prod --project=xlsx2csv-demo main.ts"
   },
   "deploy": {
+    "project": "6496a626-1c32-4965-ab36-59927962a0a0",
     "exclude": [
       "**/node_modules"
     ],
