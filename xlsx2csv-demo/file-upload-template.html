@@ -19,6 +19,7 @@
     input[type="file"]::file-selector-button, input[type="submit"] {
       cursor: pointer;
       font-weight: 400;
+      margin-bottom: 1rem;
       margin-right: 1rem;
       border: none;
       background: #2a3a5c;
@@ -54,11 +55,16 @@
   <body>
     <h1>CSV / XLSX 文件上传处理演示</h1>
     <form action="/" method="post" enctype="multipart/form-data">
-      <input type="file" name="file" accept=".xlsx, .csv">
+      <input type="file" id="file" name="file" accept=".xlsx, .csv">
       <input type="submit" value="文件上传处理并导出为 CSV 文件">
     </form>
     <blockquote>
-      <p>注：上传的文件不会被保存，将在经过数据处理后返回（下载）为 CSV 文件。</p>
+      <p>注：上传文件大小限制为 
+        <strong>
+          <span id="file-limited-size-MB"></span>MB
+        </strong>
+        ，文件上传后不会被保存，其数据经过处理后直接导出（下载）CSV 文件。
+      </p>
       <p>
         其他演示：
         <ul>
@@ -70,6 +76,24 @@
           </li>
         </ul>
       </p>
+      <p>
+        THIS IS A DEMO PAGE. Version: v20241113.
+      </p>
     </blockquote>
+    <script>
+      const fileLimitedSizeMB = 1;
+      document.getElementById('file-limited-size-MB').innerText = fileLimitedSizeMB;
+      document.getElementById('file').addEventListener('change', function() {
+        if (this.files.length > 0) {
+          const file = this.files[0];
+          const fileSize = file.size;
+          const maxSize = fileLimitedSizeMB * 1024 * 1024;
+          if (fileSize > maxSize) {
+            alert(`文件大小超过限制，请选择小于 ${fileLimitedSizeMB}MB 的文件`);
+            this.value = '';
+          }
+        }
+      });
+    </script>
   </body>
 </html>
