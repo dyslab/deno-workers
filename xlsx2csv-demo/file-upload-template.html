@@ -2,14 +2,74 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Excel 文件上传</title>
+    <title>CSV / XLSX 文件上传处理演示</title>
   </head>
+  <style>
+    body {
+      font-family: monospace, sans-serif;
+      font-size: 16px;
+      line-height: 1.42857143;
+      color: #333;
+      background-color: #f0f0f0;
+    }
+    input[type="file"] {
+      font-weight: 100;
+      cursor: pointer;
+    }
+    input[type="file"]::file-selector-button, input[type="submit"] {
+      cursor: pointer;
+      font-weight: 400;
+      margin-right: 1rem;
+      border: none;
+      background: #2a3a5c;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      color: #fff;
+    }
+    input[type="file"]::file-selector-button:hover, input[type="submit"]:hover {
+      font-weight: 600;
+      background: #294480;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    a {
+      color: #1b6dc5;
+      text-decoration: none;
+      background-color: transparent;
+    }
+    a:hover {
+      color: #00377f;
+    }
+    blockquote {
+      margin-inline-start: 0;
+      margin-inline-end: 0;
+      padding-left: 1rem;
+      border-left: 3px solid #ccc;
+    }
+  </style>
   <body>
-    <h1>Excel 文件上传</h1>
+    <h1>CSV / XLSX 文件上传处理演示</h1>
     <form action="/" method="post" enctype="multipart/form-data">
       <input type="file" name="file" accept=".xlsx, .csv">
-      <input type="submit" value="上传">
+      <input type="submit" value="文件上传处理并导出为 CSV 文件">
     </form>
-    <p>注：文件上传成功后不会被保存，在经过数据处理后，直接返回一个 CSV 文件下载链接。</p>
+    <blockquote>
+      <p>注：上传的文件不会被保存，将在经过数据处理后返回（下载）为 CSV 文件。</p>
+      <p>
+        其他演示：
+        <ul>
+          <li>
+            <a href="?type=json">读取本地 Json 文件数据</a>
+          </li>
+          <li>
+            <a href="?type=remote">读取 Json API 公共接口数据</a>
+          </li>
+        </ul>
+      </p>
+    </blockquote>
   </body>
 </html>

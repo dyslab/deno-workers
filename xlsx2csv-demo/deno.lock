@@ -1,6 +1,7 @@
 {
   "version": "4",
   "remote": {
+    "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/cpexcel.full.mjs": "7a7bba23b6b6f23b5c69fbb631f78d1d455f74b57e4aa54e9a2f81a8ab844964",
     "https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs": "1a0fb062ee9781b13f6687371b202aaefc53b6ce55b530c027e01f9c087b77db"
   }
 }

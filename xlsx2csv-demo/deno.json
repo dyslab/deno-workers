@@ -1,5 +1,13 @@
 {
   "tasks": {
-    "dev": "deno run --allow-net --allow-import --allow-read --watch main.ts"
+    "dev": "deno run --allow-net --allow-import --allow-read --watch main.ts",
+    "deploy": "deployctl deploy --prod --project=xlsx2csv-demo main.ts"
+  },
+  "deploy": {
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "main.ts"
   }
 }

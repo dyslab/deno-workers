@@ -13,9 +13,7 @@ Each subfolder of this project connects to a deno worker demo.
 ```bash
 curl -fsSL https://deno.land/install.sh | sh # For Mac / Linux
 
-# Or,
-
-irm https://deno.land/install.ps1 | iex # For Windows (PowerShell)
+# Or `irm https://deno.land/install.ps1 | iex` # For Windows (PowerShell)
 
 deno --version # Output deno version
 
