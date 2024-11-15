@@ -6,18 +6,27 @@ Each subfolder of this project connects to a deno worker demo.
 
 ## Subfolders / Worker projects
 
-1. **[XLSX File To CSV File Demo](./xlsx2csv-demo/)**: This is a demo to upload a xlsx file and then convert to a csv file for downloading. It purpose to be a basic deno snippet for xlsx file middleware / processor.
+1. **[XLSX File To CSV File Demo](./xlsx2csv-demo/)**: This is a demo to upload a xlsx / csv file and then convert to a csv file for downloading. It purpose to be a basic deno snippet for xlsx / csv file middleware / processor.
 
-## Deno Installation
+2. **[Nodes Collector](./nodes-collector/)**: This is a toolkit for collecting v2ray nodes from specific datasources.
+
+## Deno / Deno Deploy Installation
 
 ```bash
+# Deno
 curl -fsSL https://deno.land/install.sh | sh # For Mac / Linux
-
 # Or `irm https://deno.land/install.ps1 | iex` # For Windows (PowerShell)
 
 deno --version # Output deno version
 
 deno --help # For help
+
+# Deno Deploy
+deno install -A jsr:@deno/deployctl --global # Install deno deploy
+
+deployctl --version # Output deno deploy version
+
+deployctl --help  # For help
 ```
 
-> NOTE: Please refer to <https://docs.deno.com/runtime/getting_started/installation/> for more details about the installation of deno project.
+> NOTE: Please refer to <https://docs.deno.com/runtime/> and <https://docs.deno.com/deploy/manual/> for more details about the deno and deno deploy.

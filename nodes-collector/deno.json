@@ -1,0 +1,17 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --allow-import --allow-read --unstable-kv --unstable-cron --watch main.ts",
+    "deploy": "deployctl deploy --prod --project=nodes-collector main.ts"
+  },
+  "imports": {
+    "@std/yaml": "jsr:@std/yaml@^1.0.5"
+  },
+  "deploy": {
+    "project": "e15c81b0-4055-48cf-b703-8f1ff7bf8227",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "main.ts"
+  }
+}
