@@ -34,7 +34,7 @@ Deno.serve({ port: 8602, hostname: 'localhost' }, async (request) => {
 Deno.cron("Daily Fetch And Save", "11 11 * * *", async () => {
   let currentId : number | null = await loadNodesCurrentIdFromKv(kv);
   currentId = (currentId !== null)? setNextId(currentId) : 0;
-  const nodesLinks : Array<string> = await getFastestNodesLinks(currentId);
+  const nodesLinks : Array<string> = await getFastestNodesLinks(currentId, 100);
   await saveNodesToKv(kv, setNodes(currentId, nodesLinks));
   console.log(`Cron job finished at: ${new Date().toISOString()}. Saved ${nodesLinks.length} nodes. Set current Id to ${currentId}, Datasource: ${getNodesPageLink(currentId)}`);
 });
