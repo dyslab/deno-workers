@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --allow-import --allow-read --unstable-kv --unstable-cron --watch main.ts",
+    "deploy": "deployctl deploy --prod --project=mihomo-subs-converter main.ts"
+  },
+  "imports": {
+    "@std/yaml": "jsr:@std/yaml@^1.0.5"
+  }
+}

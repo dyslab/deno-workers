@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Mihomo Subscription File / Link Converter</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+  </head>
+  <style>
+    body {
+      font-family: monospace, sans-serif;
+      font-size: 16px;
+      line-height: 1.42857143;
+      color: #333;
+      background-color: #f0f0f0;
+    }
+    input.link {
+      font-size: 1rem;
+      font-style: italic;
+      width: 95%;
+      max-width: 60rem;
+      padding: 0.5rem;
+    }
+    .check-span {
+      margin-right: 1.5rem;
+      line-height: 1.5rem;
+    } 
+    input[type="submit"] {
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      background: #1d6e07;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      color: #fff;
+    }
+    input[type="submit"]:hover {
+      background: #228e04;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    a {
+      color: #258c09;
+      text-decoration: none;
+      background-color: transparent;
+      text-underline-offset: 0.4rem;
+    }
+    a:hover {
+      color: #27a404;
+      text-decoration: underline dotted;
+    }
+    blockquote {
+      margin: 1.5rem 0;
+      margin-inline-start: 0;
+      margin-inline-end: 0;
+      padding-left: 1rem;
+      border-left: 3px solid #ccc;
+    }
+    .ol-links {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+    }
+    .ol-links li {
+      display: inline;
+      margin-right: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .version-info {
+      margin: 1.5rem 0;
+      color: #777;
+    }
+  </style>
+  <body>
+    <h1>Mihomo Subscription File / Link Converter</h1>
+    <form action="/">
+      <p>
+        <input type="text" class="link" id="link" name="link" placeholder="V2ray Subscription Link (e.g. https://example.com/v2ray_subs.txt)">
+      </p>
+      <p>
+        <span class="check-span">
+          <input type="checkbox" id="base64" name="base64" value="true">
+          <label for="base64">Base64 Decoding</label>
+        </span>
+        <input type="submit" value="V2ray ➡️ Mihomo">
+      </p>
+    </form>
+    <blockquote>
+      <div>
+        <ul class="ol-links">
+          <li>Mihomo Subs Example Links:</li>
+          <li>
+            <a href="?link=https%3A%2F%2Fnodes-collector.deno.dev%2F%3Fid%3D0">🆔 nc</a>
+          </li>
+          <li>
+            <a href="?link=https%3A%2F%2Ftext2image-ui.pages.dev%2Fsubs%2Fxqe%2Ftxt&base64=true">🆔 xqe</a>
+          </li>
+        </ul>
+      </div>
+      <div class="version-info">Version: v20241117</div>
+    </blockquote>
+  </body>
+</html>

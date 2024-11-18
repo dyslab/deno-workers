@@ -10,6 +10,8 @@ Each subfolder of this project connects to a deno worker demo.
 
 2. **[Nodes Collector](./nodes-collector/)**: This is a toolkit for collecting v2ray nodes from specific datasources.
 
+3. **[Mihomo Subscription File / Link Converter](./mihomo-subs-converter/)**: This is a toolkit for generating mihomo subscription file / link from v2ray subscription link.
+
 ## Deno / Deno Deploy Installation
 
 ```bash
