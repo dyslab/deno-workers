@@ -3,8 +3,15 @@ interface NodesInfoLocalStorage {
   timestamp: number;
 }
 
-function isValidNode(node: string): boolean {
-  return /(\w{2,10}):\/\/(.+)/.test(node);
+function isLocalStorageAvaliable(): boolean {
+  try {
+    localStorage.setItem("test", "test");
+    localStorage.removeItem("test");
+    return true;
+  } catch (_error) {
+    console.error('localStroage is unabliable.');
+    return false;
+  }
 }
 
 function getUrlID(url:string) : string {
@@ -36,7 +43,8 @@ function removeKeyFromLocalStorageKeyList(key: string) : void {
   }
 }
 
-function removeExpiredNodesFromLocalStorage() : void {
+function removeExpiredNodesFromLocalStorage() : number {
+  let deletedCount: number = 0;
   const localStorageKeyList: string | null = localStorage.getItem("localStorageKeyList");
   if (localStorageKeyList) {
     const localStorageKeyListArray: Array<string> = JSON.parse(localStorageKeyList);
@@ -46,12 +54,14 @@ function removeExpiredNodesFromLocalStorage() : void {
       if (nodesValue) {
         const nodesObj : NodesInfoLocalStorage = JSON.parse(nodesValue) as NodesInfoLocalStorage;
         if (nodesObj.timestamp && (Date.now() - nodesObj.timestamp) > 86400000) { // 86400000 ms = 1 day
+          deletedCount++;
           localStorage.removeItem(key);
         } else if (nodesObj.timestamp) newKeyListArray.push(key);
       }
     }
     localStorage.setItem("localStorageKeyList", JSON.stringify(newKeyListArray));
   }
+  return deletedCount;
 }
 
 function getNodesFromLocalStorage(link: string) : Array<string> | null {
@@ -74,7 +84,7 @@ function getNodesFromLocalStorage(link: string) : Array<string> | null {
 function insertNodesToLocalStorage(link: string, nodes: Array<string>) : void {
   const timestamp: number = Date.now();
   const key: string = getUrlID(link);
-  console.log(`Insert nodes of '${link}' to localStorage. Timestamp: ${timestamp}`)
+  console.log(`Insert nodes of '${link}' to localStorage. Timestamp: ${timestamp}`);
   localStorage.setItem(key, JSON.stringify({
     nodes,
     timestamp
@@ -82,4 +92,4 @@ function insertNodesToLocalStorage(link: string, nodes: Array<string>) : void {
   addKeyToLocalStorageKeyList(key);
 }
 
-export { isValidNode, getNodesFromLocalStorage, insertNodesToLocalStorage, removeExpiredNodesFromLocalStorage };
+export { isLocalStorageAvaliable, getNodesFromLocalStorage, insertNodesToLocalStorage, removeExpiredNodesFromLocalStorage };

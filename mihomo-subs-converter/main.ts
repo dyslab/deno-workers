@@ -1,6 +1,9 @@
 import { decodeUtf8 } from "./unicode-helper.ts";
-import { isValidNode, getNodesFromLocalStorage, insertNodesToLocalStorage } from "./localstorage.ts";
+import { isValidNode, detectStorage, getNodesFromStorage, insertNodesToStorage, removeExpiredNodesFromStorage } from "./storage.ts";
 import { convertNodesToMihomo } from "./mihomo.ts";
+
+// 检测存储类型, 优先使用 localStorage, 其次使用 Deno.Kv, 都不可用则返回 null
+const kvStorage = await detectStorage();
 
 function checkFavIcon(url: string): string {
   const faviconFiles: Array<string> = [
@@ -27,9 +30,9 @@ function isTrueOrYes(value: string | null): boolean {
 
 async function v2rayToMihomo(link: string, b64DecodeFlag: boolean): Promise<string> {
   try {
-    const localStorageNodes : Array<string> | null =  getNodesFromLocalStorage(link);
-    if (localStorageNodes) {
-      return await convertNodesToMihomo(localStorageNodes);
+    const stroageNodes : Array<string> | null =  await getNodesFromStorage(link, kvStorage);
+    if (stroageNodes) {
+      return await convertNodesToMihomo(stroageNodes);
     }
     const resp: Response = await fetch(link);
     let v2rayText: string = await resp.text();
@@ -43,13 +46,18 @@ async function v2rayToMihomo(link: string, b64DecodeFlag: boolean): Promise<stri
         }
       }
       if (vaildV2rayNodes.length > 0) {
-        insertNodesToLocalStorage(link, vaildV2rayNodes);
+        await insertNodesToStorage(link, vaildV2rayNodes, kvStorage)
         return await convertNodesToMihomo(vaildV2rayNodes);
       } else return 'Error: Resolve nodes failed 🙁'
     } else return 'Error: Response not ok 🙁';
   } catch (error) {
-    console.error(error);
-    return error as string;
+    if (error instanceof DOMException) {
+      if (error.name === 'InvalidCharacterError') {
+        return 'InvalidCharacterError: Check base64 decoding option 🙁';
+      } else {
+        return 'DOMException: Check url and base64 decoding option 🙁';
+      }
+    } else return error as string;
   }
 }
 
@@ -73,4 +81,8 @@ Deno.serve({ port: 8603, hostname: 'localhost' }, async (request) => {
     default:
       return new Response(`Request method ${request.method} not support.`, { status: 200 });
   }
+});
+
+Deno.cron('Auto remove expired nodes from storage daily', '22 2 * * *', async () => {
+  await removeExpiredNodesFromStorage(kvStorage);
 });
