@@ -42,12 +42,14 @@ async function v2rayToMihomo(link: string, b64DecodeFlag: boolean): Promise<stri
           vaildV2rayNodes.push(v2rayNode);
         }
       }
-      if (vaildV2rayNodes.length > 0) insertNodesToLocalStorage(link, vaildV2rayNodes);
-    }
-    return resp.ok? vaildV2rayNodes.join('') : '';
+      if (vaildV2rayNodes.length > 0) {
+        insertNodesToLocalStorage(link, vaildV2rayNodes);
+        return await convertNodesToMihomo(vaildV2rayNodes);
+      } else return 'Error: Resolve nodes failed 🙁'
+    } else return 'Error: Response not ok 🙁';
   } catch (error) {
     console.error(error);
-    return '';
+    return error as string;
   }
 }
 
@@ -61,8 +63,8 @@ Deno.serve({ port: 8603, hostname: 'localhost' }, async (request) => {
         const link: string = decodeURIComponent(url.searchParams.get("link") || "");
         const b64DecodeFlag: boolean = isTrueOrYes(url.searchParams.get("base64"));
         if(link) {
-          const return_value: string = await v2rayToMihomo(link, b64DecodeFlag);
-          return new Response(return_value, { status: 200 });  
+          const returnText: string = await v2rayToMihomo(link, b64DecodeFlag);
+          return new Response(returnText, { status: 200 });
         } else {
           return await fetch(new URL(`./default.html`, import.meta.url));
         }

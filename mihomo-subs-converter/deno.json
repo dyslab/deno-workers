@@ -5,5 +5,13 @@
   },
   "imports": {
     "@std/yaml": "jsr:@std/yaml@^1.0.5"
+  },
+  "deploy": {
+    "project": "2302e0da-82dd-40cd-bb43-03af2c81bae3",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "main.ts"
   }
 }
