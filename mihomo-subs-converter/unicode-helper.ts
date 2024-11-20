@@ -1,8 +1,11 @@
+/*
+  Url-Safe 64 decoding with chinese unicode support
+*/
 export function decodeUtf8(str: string): string {
   return decodeURIComponent(
     new TextDecoder('utf-8').decode(
       new Uint8Array(
-        atob(str).split('').map(
+        atob(str.replace(/_/g, '/').replace(/-/g, '+')).split('').map(
           (c) => c.charCodeAt(0)
         )
       )
@@ -24,7 +27,7 @@ export function encodeHexUnicode(str: string): string {
 }
 
 export function addYamlHeaderComment(str: string): string {
-  return `# 模版地址：v2rayse.com
+  return `# 模版来源：v2rayse.com
 # 模版名称：DySLaB
 # 生成时间：${new Date()}
 # 不要随意改变关键字，否则会导致出错
@@ -35,7 +38,7 @@ export function addYamlHeaderComment(str: string): string {
 # 苹果分流：支持
 # 增强中国IP段：不支持
 # 增强国外GFW：不支持
-# 节点类型：ss / vmess / vless / trojan
+# 节点类型：ss / ssr / vmess / vless / trojan
 
 ${str}`;
 }

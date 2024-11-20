@@ -1,6 +1,7 @@
 import * as YAML from '@std/yaml';
 import { decodeUtf8, encodeHexUnicode, addYamlHeaderComment } from "./unicode-helper.ts";
 
+// 有关各类代理协议的配置信息，请参考 https://stash.wiki/proxy-protocols/proxy-types
 interface V2rayNodeStructure {
   'protocol': string;
   'info': string;
@@ -19,6 +20,21 @@ interface ProtocolSSNode {
   'udp': boolean;
   'cipher': string;
   'password': string;
+}
+
+interface ProtocolSSRNode {
+  'name': string;
+  'server': string;
+  'port': number;
+  'type': string;
+  'udp': boolean;
+  'obfs': string;
+  'protocol': string;
+  'cipher': string;
+  'password': string;
+  'group': string;
+  'obfs-param': string;
+  'protocol-param': string;
 }
 
 interface ProtocolVmessNode {
@@ -107,7 +123,11 @@ function parseSSNode(info: string): ProtocolSSNode | null {
       const server: string = matchResult[2];
       const port: number = parseInt(matchResult[3]);
       const name: string = matchResult[4];
-      return <ProtocolSSNode>{ name, server, port, type: 'ss', udp: true, cipher, password };
+      return <ProtocolSSNode>{ 
+        name, server, port, cipher, password, 
+        'type': 'ss', 
+        'udp': true 
+      };
     } else {
       const matchResult2: Array<string> | null = decodeURIComponent(info).match(/(.+)#(.+)/);
       if (matchResult2 && matchResult2.length === 3) {
@@ -118,10 +138,50 @@ function parseSSNode(info: string): ProtocolSSNode | null {
           const password: string = matchResult21[2];
           const server: string = matchResult21[3];
           const port: number = parseInt(matchResult21[4]);
-          return <ProtocolSSNode>{ name, server, port, type: 'ss', udp: true, cipher, password };
+          return <ProtocolSSNode>{ 
+            name, server, port, cipher, password, 
+            'type': 'ss', 
+            'udp': true 
+          };
         } else return null;
       } else return null;
     }
+  } catch(error) {
+    console.error(error)
+    return null;
+  }
+}
+
+/*
+  SSR QRcode scheme: https://github.com/shadowsocksr-backup/shadowsocks-rss/wiki/SSR-QRcode-scheme
+  ssr://base64(host:port:protocol:method:obfs:base64pass/?obfsparam=base64param&protoparam=base64param&remarks=base64remarks&group=base64group&udpport=0&uot=0)
+  */
+function parseSSRNode(info: string): ProtocolSSRNode | null {
+  try {
+    const decodedInfo: string | null = decodeUtf8(info);
+    const matchResult: Array<string> | null = decodedInfo.match(/(.*):([0-9]*):(.+):(.+):(.+):(.+)/);
+    if (matchResult && matchResult.length === 7) {
+      const server: string = matchResult[1];
+      const port: number = parseInt(matchResult[2]);
+      const protocol: string = matchResult[3];
+      const cipher: string = matchResult[4];
+      const obfs: string = matchResult[5];
+      const ssrNode: ProtocolSSRNode = <ProtocolSSRNode>{ 
+        server, port, protocol, obfs, cipher,
+        'type': 'ssr', 
+        'udp': true 
+      };
+      const [encodedPassword, params] = matchResult[6].split('/?');
+      if (encodedPassword) ssrNode['password'] = decodeURIComponent(atob(encodedPassword));
+      if (params) {
+        const urlParams = new URLSearchParams(params);
+        if (urlParams.has('group')) ssrNode['group'] = decodeURIComponent(atob(urlParams.get('group') as string));
+        if (urlParams.has('remark')) ssrNode['name'] = decodeURIComponent(atob(urlParams.get('remark') as string));
+        if (urlParams.has('obfsparam')) ssrNode['obfs-param'] = decodeURIComponent(atob(urlParams.get('obfsparam') as string));
+        if (urlParams.has('protoparam')) ssrNode['protocol-param'] = decodeURIComponent(atob(urlParams.get('protoparam') as string));
+      }
+      return ssrNode;
+    } else return null;
   } catch(error) {
     console.error(error)
     return null;
@@ -135,21 +195,21 @@ function parseVmessNode(info: string): ProtocolVmessNode | null {
     if (decodedObj) {
       const name: string = decodedObj['ps']? decodedObj['ps'] as string: '';
       const server: string = decodedObj['add']? decodedObj['add'] as string: '';
-      const port: number = decodedObj['port']? decodedObj['port'] as number: 0;
-      const version: number = decodedObj['v']? decodedObj['v'] as number: 0;
-      const alterId: number = decodedObj['aid']? decodedObj['aid'] as number: 0;
+      const port: number = decodedObj['port']? parseInt(decodedObj['port'] as string): 0;
+      const alterId: number = decodedObj['aid']? parseInt(decodedObj['aid'] as string): 0;
       const sni: string = decodedObj['sni']? decodedObj['sni'] as string: '';
-      const tls: boolean = decodedObj['tls']? decodedObj['tls'] as boolean: false;
       const servername: string = decodedObj['host']? decodedObj['host'] as string: '';
+      const tls: boolean = decodedObj['tls']? Boolean(decodedObj['tls'] as boolean): false;
       const uuid: string = decodedObj['id']? decodedObj['id'] as string: '';
-      const cipher: string = decodedObj['security']? decodedObj['security'] as string: 'auto';
+      const cipher: string = (decodedObj['scy'] || decodedObj['security'])? (decodedObj['scy'] as string || decodedObj['security'] as string): 'auto';
       const network: string = decodedObj['net']? decodedObj['net'] as string: '';
-      const skipCertVerify: boolean = decodedObj['skip-cert-verify']? decodedObj['skip-cert-verify'] as boolean: false;
+      const skipCertVerify: boolean = decodedObj['skip-cert-verify']? Boolean(decodedObj['skip-cert-verify'] as boolean): false;
       const vmessNode : ProtocolVmessNode = <ProtocolVmessNode>{ 
-        name, server, port, version, sni, tls, servername, uuid, cipher, alterId, network,
+        name, server, port, sni, servername, tls, uuid, cipher, alterId, network,
         'type': 'vmess',
         'skip-cert-verify': skipCertVerify,
       };
+      if (decodedObj['v']) vmessNode['version'] = Number(decodedObj['v'] as number);
       const opts: object = { 
         'path': decodedObj['path']? decodedObj['path'] as string: '',
         'headers': {
@@ -185,7 +245,10 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
       const server: string = matchResult[2];
       const port: number = parseInt(matchResult[3]);
       const name: string = matchResult[5];
-      const vlessNode: ProtocolVlessNode = <ProtocolVlessNode>{ name, server, port, type: 'vless', uuid };
+      const vlessNode: ProtocolVlessNode = <ProtocolVlessNode>{ 
+        name, server, port, uuid, 
+        'type': 'vless' 
+      };
       const params: string = matchResult[4];
       if (params) {
         const urlParams = new URLSearchParams(params);
@@ -221,19 +284,22 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
 
 function parseTrojanNode(info: string): ProtocolTrojanNode | null {
   try {
-    const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.*):([0-9]*)\?(.+)#(.*)/);
+    const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.*):([0-9]*)\??(.+)?#(.*)/);
     if (matchResult && matchResult.length === 6) {
       const password: string = matchResult[1];
       const server: string = matchResult[2];
       const port: number = parseInt(matchResult[3]);
       const name: string = matchResult[5];
-      const trojanNode: ProtocolTrojanNode = <ProtocolTrojanNode>{ name, server, port, type: 'trojan', password };
-      const params: string = matchResult[4];
-      if (params) {
-        const urlParams = new URLSearchParams(params);
+      const trojanNode: ProtocolTrojanNode = <ProtocolTrojanNode>{ 
+        name, server, port, password,
+        'udp': true,
+        'type': 'trojan',
+      };
+      if (matchResult[4]) {
+        const urlParams = new URLSearchParams(matchResult[4]);
         if (urlParams.has('sni')) trojanNode['sni'] = urlParams.get('sni') as string;
         if (urlParams.has('type')) trojanNode['network'] = urlParams.get('type') as string;
-        if (urlParams.has('security')) trojanNode['tls'] = (urlParams.get('security') as string === 'tls')? true: false;
+        if (urlParams.has('security')) trojanNode['tls'] = ['tls', 'true'].includes((urlParams.get('security') as string).toLocaleLowerCase())? true: false;
         if (urlParams.has('alpn')) trojanNode['alpn'] = [urlParams.get('alpn') as string];
         if (urlParams.has('skip-cert-verify')) trojanNode['skip-cert-verify'] = (urlParams.get('skip-cert-verify') as string === 'true')? true: false;  
       }
@@ -254,6 +320,11 @@ async function convertNodesToMihomo(nodes: Array<string>): Promise<string> {
         case 'ss': {
           const ssNode: ProtocolSSNode | null = parseSSNode(v2rayNode.info);
           if (ssNode) targetNodes.push(ssNode);
+          break;
+        }
+        case 'ssr': {
+          const ssrNode: ProtocolSSRNode | null = parseSSRNode(v2rayNode.info);
+          if (ssrNode) targetNodes.push(ssrNode);
           break;
         }
         case 'vmess': {
