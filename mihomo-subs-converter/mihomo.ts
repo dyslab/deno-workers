@@ -116,10 +116,20 @@ async function getMihomoTemplateObject(): Promise<MihomoTemplateProxiesConfig | 
 }
 
 function parseSSNode(info: string): ProtocolSSNode | null {
+  function isCipherValidForSSNode(cipher: string): boolean {
+    const validCipherForSSNode = [
+      'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm', 'chacha20-ietf-poly1305', 'xchacha20-ietf-poly1305',
+      'aes-128-cfb', 'aes-192-cfb', 'aes-256-cfb', 'rc4-md5', 'chacha20-ietf', 'xchacha20',
+      'aes-128-ctr', 'aes-192-ctr', 'aes-256-ctr',
+    ];
+    return validCipherForSSNode.includes(cipher);
+  }
+
   try {
     const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.+):(\d+)#(.+)/);
     if (matchResult && matchResult.length === 5) {
       const [ cipher, password ]: string[] = atob(matchResult[1]).split(':');
+      if (!isCipherValidForSSNode(cipher)) throw new TypeError('Invalid cipher method');
       const server: string = matchResult[2];
       const port: number = parseInt(matchResult[3]);
       const name: string = matchResult[4];
@@ -135,6 +145,7 @@ function parseSSNode(info: string): ProtocolSSNode | null {
         const matchResult21: Array<string> | null = atob(matchResult2[1]).match(/(.+):(.+)@(.+):(\d+)/);
         if (matchResult21 && matchResult21.length === 5) {
           const cipher: string = matchResult21[1];
+          if (!isCipherValidForSSNode(cipher)) throw new TypeError('Invalid cipher method');
           const password: string = matchResult21[2];
           const server: string = matchResult21[3];
           const port: number = parseInt(matchResult21[4]);
@@ -143,13 +154,13 @@ function parseSSNode(info: string): ProtocolSSNode | null {
             'type': 'ss', 
             'udp': true 
           };
-        } else return null;
-      } else return null;
+        }
+      }
     }
   } catch(error) {
     console.error(error)
-    return null;
   }
+  return null;
 }
 
 /*
@@ -181,11 +192,11 @@ function parseSSRNode(info: string): ProtocolSSRNode | null {
         if (urlParams.has('protoparam')) ssrNode['protocol-param'] = decodeURIComponent(atob(urlParams.get('protoparam') as string));
       }
       return ssrNode;
-    } else return null;
+    }
   } catch(error) {
-    console.error(error)
-    return null;
+    console.error(error);
   }
+  return null;
 }
 
 function parseVmessNode(info: string): ProtocolVmessNode | null {
@@ -230,11 +241,10 @@ function parseVmessNode(info: string): ProtocolVmessNode | null {
       }
       return vmessNode;
     }
-    else return null;  
   } catch(error) {
     console.error(error)
-    return null;
   }
+  return null;
 }
 
 function parseVlessNode(info: string): ProtocolVlessNode | null {
@@ -275,11 +285,11 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
         }  
       }
       return vlessNode;
-    } else return null;
+    }
   } catch(error) {
-    console.error(error)
-    return null;
+    console.error(error);
   }
+  return null;
 }
 
 function parseTrojanNode(info: string): ProtocolTrojanNode | null {
@@ -304,11 +314,11 @@ function parseTrojanNode(info: string): ProtocolTrojanNode | null {
         if (urlParams.has('skip-cert-verify')) trojanNode['skip-cert-verify'] = (urlParams.get('skip-cert-verify') as string === 'true')? true: false;  
       }
       return trojanNode;
-    } else return null;
+    }
   } catch(error) {
-    console.error(error)
-    return null;
+    console.error(error);
   }
+  return null;
 }
 
 async function convertNodesToMihomo(nodes: Array<string>): Promise<string> {
@@ -346,7 +356,7 @@ async function convertNodesToMihomo(nodes: Array<string>): Promise<string> {
     }
   }
   // 如果没有找到可用节点，直接返回错误字符串
-  if (targetNodes.length === 0) return 'Error: No available nodes found 🙁';
+  if (targetNodes.length === 0) return 'Error: No available nodes found. Check the link and the decoding method again 🙁';
   // 节点名称防重，每个节点名称后面添加防重标记 @DySLaB_1, 2, 3...
   for (let i = 0; i < targetNodes.length; i++) {
     const node: BaseNode = targetNodes[i];

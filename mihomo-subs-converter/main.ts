@@ -48,7 +48,7 @@ async function v2rayToMihomo(link: string, b64DecodeFlag: boolean): Promise<stri
       if (vaildV2rayNodes.length > 0) {
         await insertNodesToStorage(link, vaildV2rayNodes, kvStorage)
         return await convertNodesToMihomo(vaildV2rayNodes);
-      } else return 'Error: Resolve nodes failed 🙁'
+      } else return 'Error: Node resolution failed. Change the decoding option and try again. 🙁'
     } else return 'Error: Response not ok 🙁';
   } catch (error) {
     if (error instanceof DOMException) {
