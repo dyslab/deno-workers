@@ -10,44 +10,36 @@ interface V2rayNodeStructure {
 interface BaseNode {
   'name': string;
   'type': string;
+  'cipher': string;
 }
 
-interface ProtocolSSNode {
-  'name': string;
+interface ProtocolSSNode extends BaseNode {
   'server': string;
   'port': number;
-  'type': string;
   'udp': boolean;
-  'cipher': string;
   'password': string;
 }
 
-interface ProtocolSSRNode {
-  'name': string;
+interface ProtocolSSRNode extends BaseNode {
   'server': string;
   'port': number;
-  'type': string;
   'udp': boolean;
   'obfs': string;
   'protocol': string;
-  'cipher': string;
   'password': string;
   'group': string;
   'obfs-param': string;
   'protocol-param': string;
 }
 
-interface ProtocolVmessNode {
-  'name': string;
+interface ProtocolVmessNode extends BaseNode {
   'server': string;
   'servername': string;
   'port': number;
-  'type': string;
   'sni': string;
   'tls': boolean;
   'uuid': string;
   'version': number;
-  'cipher': string;
   'alterId': number;
   'network': string;
   'skip-cert-verify': boolean;
@@ -55,26 +47,21 @@ interface ProtocolVmessNode {
   'http-opts': object;
 }
 
-interface ProtocolVlessNode {
-  'name': string;
+interface ProtocolVlessNode extends BaseNode {
   'server': string;
   'port': number;
-  'type': string;
   'sni': string;
   'tls': boolean;
   'uuid': string;
-  'cipher': string;
   'network': string;
   'skip-cert-verify': boolean;
   'ws-opts':  object;
   'http-opts': object;
 }
 
-interface ProtocolTrojanNode {
-  'name': string;
+interface ProtocolTrojanNode extends BaseNode {
   'server': string;
   'port': number;
-  'type': string;
   'sni': string;
   'password': string;
   'network': string;
@@ -91,7 +78,7 @@ interface MihomoTemplateProxyGroupsConfig {
 }
 
 interface MihomoTemplateProxiesConfig {
-  'proxies': Array<ProtocolSSNode | ProtocolVmessNode | BaseNode>;
+  'proxies': Array<ProtocolSSNode | ProtocolSSRNode | ProtocolVmessNode | ProtocolVlessNode | ProtocolTrojanNode | BaseNode>;
   'proxy-groups': Array<MihomoTemplateProxyGroupsConfig>;
 }
 
@@ -115,16 +102,16 @@ async function getMihomoTemplateObject(): Promise<MihomoTemplateProxiesConfig | 
   }
 }
 
-function parseSSNode(info: string): ProtocolSSNode | null {
-  function isCipherValidForSSNode(cipher: string): boolean {
-    const validCipherForSSNode = [
-      'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm', 'chacha20-ietf-poly1305', 'xchacha20-ietf-poly1305',
-      'aes-128-cfb', 'aes-192-cfb', 'aes-256-cfb', 'rc4-md5', 'chacha20-ietf', 'xchacha20',
-      'aes-128-ctr', 'aes-192-ctr', 'aes-256-ctr',
-    ];
-    return validCipherForSSNode.includes(cipher);
-  }
+function isCipherValidForSSNode(cipher: string): boolean {
+  const validCipherForSSNode = [
+    'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm', 'chacha20-ietf-poly1305', 'xchacha20-ietf-poly1305',
+    'aes-128-cfb', 'aes-192-cfb', 'aes-256-cfb', 'rc4-md5', 'chacha20-ietf', 'xchacha20',
+    'aes-128-ctr', 'aes-192-ctr', 'aes-256-ctr',
+  ];
+  return validCipherForSSNode.includes(cipher);
+}
 
+function parseSSNode(info: string): ProtocolSSNode | null {
   try {
     const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.+):(\d+)\/?#(.+)/);
     if (matchResult && matchResult.length === 5) {
@@ -370,4 +357,5 @@ async function convertNodesToMihomo(nodes: Array<string>): Promise<string> {
   } else return '';
 }
 
-export { convertNodesToMihomo };
+export { convertNodesToMihomo, isCipherValidForSSNode };
+export type { MihomoTemplateProxiesConfig, BaseNode };

@@ -1,12 +1,14 @@
 import { decodeUtf8 } from "./unicode-helper.ts";
 import { isValidNode, detectStorage, getNodesFromStorage, insertNodesToStorage, removeExpiredNodesFromStorage } from "./storage.ts";
 import { convertNodesToMihomo } from "./mihomo.ts";
+import * as FIX from "./fix.ts";
 
 // 检测存储类型, 优先使用 localStorage, 其次使用 Deno.Kv, 都不可用则返回 null
 const kvStorage = await detectStorage();
 
 function checkFavIcon(url: string): string {
   const faviconFiles: Array<string> = [
+    "styles.css",
     "favicon.ico",
     "favicon.png",
     "favicon.jpg",
@@ -61,28 +63,39 @@ async function v2rayToMihomo(link: string, b64DecodeFlag: boolean): Promise<stri
   }
 }
 
-Deno.serve({ port: 8603, hostname: 'localhost' }, async (request) => {
-  switch (request.method) {
-    case "GET": {
-      const favIcon: string = checkFavIcon(request.url);
-      if (favIcon) return await fetch(new URL(`./assets/${favIcon}`, import.meta.url));
-      else {
-        const url: URL = new URL(request.url);
-        const link: string = decodeURIComponent(url.searchParams.get("link") || "");
-        const b64DecodeFlag: boolean = isTrueOrYes(url.searchParams.get("base64"));
-        if(link) {
-          const returnText: string = await v2rayToMihomo(link, b64DecodeFlag);
-          return new Response(returnText, { status: 200 });
-        } else {
-          return await fetch(new URL(`./default.html`, import.meta.url));
-        }
+async function getRouter(request: Request): Promise<Response> {
+  // 处理 favicon.ico 请求
+  const favIcon: string = checkFavIcon(request.url);
+  if (favIcon) return await fetch(new URL(`./assets/${favIcon}`, import.meta.url));
+  else {
+    const url: URL = new URL(request.url);
+    if (url.pathname === '/') {
+      // 处理根路径请求
+      const link: string = decodeURIComponent(url.searchParams.get("link") || "");
+      const b64DecodeFlag: boolean = isTrueOrYes(url.searchParams.get("base64"));
+      if (link) {
+        const returnText: string = await v2rayToMihomo(link, b64DecodeFlag);
+        return new Response(returnText, { status: 200 });
+      }
+    } else {
+      // 处理其他路径请求
+      switch (url.pathname) {
+        case '/fix':
+          return await FIX.getHandler(request);
+        default:
+          return new Response(`Request path ${url.pathname} not support.`, { status: 404 });
       }
     }
-    default:
-      return new Response(`Request method ${request.method} not support.`, { status: 200 });
   }
-});
+  return await fetch(new URL(`./default.html`, import.meta.url));
+}
 
-Deno.cron('Auto remove expired nodes from storage daily', '22 2 * * *', async () => {
+Deno.serve({ port: 8603, hostname: 'localhost' }, async (request) => 
+  (request.method === 'GET')? 
+  await getRouter(request) : 
+  new Response(`Request method ${request.method} not support.`, { status: 200 })
+);
+
+Deno.cron('Auto remove expired nodes from storage daily', '33 11 * * *', async () => {
   await removeExpiredNodesFromStorage(kvStorage);
 });
