@@ -66,7 +66,7 @@ interface ProtocolVlessNode {
   'cipher': string;
   'network': string;
   'skip-cert-verify': boolean;
-  'ws-opts': object;
+  'ws-opts':  object;
   'http-opts': object;
 }
 
@@ -126,7 +126,7 @@ function parseSSNode(info: string): ProtocolSSNode | null {
   }
 
   try {
-    const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.+):(\d+)#(.+)/);
+    const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.+):(\d+)\/?#(.+)/);
     if (matchResult && matchResult.length === 5) {
       const [ cipher, password ]: string[] = atob(matchResult[1]).split(':');
       if (!isCipherValidForSSNode(cipher)) throw new TypeError('Invalid cipher method');
@@ -221,19 +221,15 @@ function parseVmessNode(info: string): ProtocolVmessNode | null {
         'skip-cert-verify': skipCertVerify,
       };
       if (decodedObj['v']) vmessNode['version'] = Number(decodedObj['v'] as number);
-      const opts: object = { 
-        'path': decodedObj['path']? decodedObj['path'] as string: '',
-        'headers': {
-          'host': decodedObj['host']? decodedObj['host'] as string: ''
-        }
-      };
       switch (network) {
         case 'ws': {
-          vmessNode[`ws-opts`] = opts;
+          if (decodedObj['path']) vmessNode[`ws-opts`] = { ...vmessNode[`ws-opts`], 'path': decodedObj['path'] as string };
+          if (decodedObj['host']) vmessNode['ws-opts'] = { ...vmessNode['ws-opts'], 'headers': { 'host': decodedObj['host'] as string }};
           break;
         }
         case 'http': {
-          vmessNode[`http-opts`] = opts;
+          if (decodedObj['path']) vmessNode['http-opts'] = { ...vmessNode['http-opts'], 'path': [decodedObj['path'] as string] };
+          if (decodedObj['host']) vmessNode['http-opts'] = { ...vmessNode['http-opts'], 'headers': { 'host': [decodedObj['host'] as string] }};
           break;
         }
         default: 
@@ -249,7 +245,7 @@ function parseVmessNode(info: string): ProtocolVmessNode | null {
 
 function parseVlessNode(info: string): ProtocolVlessNode | null {
   try {
-    const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.*):([0-9]*)\?(.+)#(.*)/);
+    const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.*):([0-9]*)\/?\?(.+)#(.*)/);
     if (matchResult && matchResult.length === 6) {
       const uuid: string = matchResult[1];
       const server: string = matchResult[2];
@@ -265,19 +261,15 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
         if (urlParams.has('type')) vlessNode['network'] = urlParams.get('type') as string;
         if (urlParams.has('sni')) vlessNode['sni'] = urlParams.get('sni') as string;
         if (urlParams.has('security')) vlessNode['cipher'] = urlParams.get('security') as string;
-        const opts: object = { 
-          'path': urlParams.has('path')? urlParams.get('path') as string : '',
-          'headers': {
-            'host': urlParams.has('host')? urlParams.get('host') as string : ''
-          }
-        };
         switch (vlessNode['network']) {
           case 'ws': {
-            vlessNode[`ws-opts`] = opts;
+            if (urlParams.has('path')) vlessNode['ws-opts'] = { ...vlessNode['ws-opts'], 'path': urlParams.get('path') as string };
+            if (urlParams.has('host')) vlessNode['ws-opts'] = { ...vlessNode['ws-opts'], 'headers': { 'host': urlParams.get('path') as string }};
             break;
           }
           case 'http': {
-            vlessNode[`http-opts`] = opts;
+            if (urlParams.has('path')) vlessNode['http-opts'] = { ...vlessNode['http-opts'], 'path': [urlParams.get('path') as string] };
+            if (urlParams.has('host')) vlessNode['http-opts'] = { ...vlessNode['http-opts'], 'headers': { 'host': [urlParams.get('path') as string] }};
             break;
           }
           default: 
@@ -294,7 +286,7 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
 
 function parseTrojanNode(info: string): ProtocolTrojanNode | null {
   try {
-    const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.*):([0-9]*)\??(.+)?#(.*)/);
+    const matchResult: Array<string> | null = decodeURIComponent(info).match(/(.+)@(.*):([0-9]*)\/?\??(.+)?#(.*)/);
     if (matchResult && matchResult.length === 6) {
       const password: string = matchResult[1];
       const server: string = matchResult[2];
