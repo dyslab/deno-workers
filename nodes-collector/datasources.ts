@@ -2,6 +2,11 @@ const NODES_PAGE_LIST: Array<string> = [
   'https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/LogInfo.txt',
 ]
 
+/**
+ * 
+ * Common functions
+ * 
+ */
 function setNextId(id: number): number {
   return (id + 1) % NODES_PAGE_LIST.length;
 }
@@ -12,6 +17,38 @@ function getNodesPageLink(id: string | number): string | null {
     return NODES_PAGE_LIST[numberId];
   else 
     return null;
+}
+
+async function getLinksFromDataSource(id: number, count: number = 50): Promise<Array<string>> {
+  switch (id) {
+    case 0: return await getFastestNodesLinks(id, count);
+    case 1: break; // return (await fetchSourceFile(NODES_PAGE_LIST[id])).split('\n');
+  }
+  return [];
+}
+
+async function fetchSourceFile(url: URL | string): Promise<string> {
+  const resp = await fetch(url);
+  return await resp.text();
+}
+
+/**
+ * 
+ * The data types and functions below are designed to parse the following page(s)
+ * 
+ *  NODES_PAGE_LIST[0], 'https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/LogInfo.txt'
+ * 
+ */ 
+interface LogInfo {
+  name: string;
+  type: string;
+  id: number;
+  remarks: string;
+  protocol: string;
+  ping: number;
+  avg_speed: number;
+  max_speed: number;
+  Link: string;
 }
 
 async function getFastestNodesLinks(id: number, count: number = 50): Promise<Array<string>> {
@@ -51,24 +88,6 @@ async function loadAvaliableNodesFromSource(id: number): Promise<Array<LogInfo>>
   }
 }
 
-async function fetchSourceFile(url: URL | string): Promise<string> {
-  const resp = await fetch(url);
-  return await resp.text();
-}
-
-// Functions about parsing LogInfo from url 'https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/LogInfo.txt'
-interface LogInfo {
-  name: string;
-  type: string;
-  id: number;
-  remarks: string;
-  protocol: string;
-  ping: number;
-  avg_speed: number;
-  max_speed: number;
-  Link: string;
-}
-
 function parseLogInfo(logInfo: string): LogInfo | null {
 
   function parseNumber(value: string): number {
@@ -101,4 +120,4 @@ function parseLogInfo(logInfo: string): LogInfo | null {
   }
 }
 
-export { setNextId, getNodesPageLink, getFastestNodesLinks }
+export { setNextId, getNodesPageLink, getLinksFromDataSource }
