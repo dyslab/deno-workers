@@ -251,12 +251,12 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
         switch (vlessNode['network']) {
           case 'ws': {
             if (urlParams.has('path')) vlessNode['ws-opts'] = { ...vlessNode['ws-opts'], 'path': urlParams.get('path') as string };
-            if (urlParams.has('host')) vlessNode['ws-opts'] = { ...vlessNode['ws-opts'], 'headers': { 'host': urlParams.get('path') as string }};
+            if (urlParams.has('host')) vlessNode['ws-opts'] = { ...vlessNode['ws-opts'], 'headers': { 'host': urlParams.get('host') as string }};
             break;
           }
           case 'http': {
             if (urlParams.has('path')) vlessNode['http-opts'] = { ...vlessNode['http-opts'], 'path': [urlParams.get('path') as string] };
-            if (urlParams.has('host')) vlessNode['http-opts'] = { ...vlessNode['http-opts'], 'headers': { 'host': [urlParams.get('path') as string] }};
+            if (urlParams.has('host')) vlessNode['http-opts'] = { ...vlessNode['http-opts'], 'headers': { 'host': [urlParams.get('host') as string] }};
             break;
           }
           default: 
