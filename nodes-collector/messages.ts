@@ -5,7 +5,7 @@ HINT: Remember to give this link a parameter 'id' to fetch a v2ray nodes file. ð
 
 Kv database last updated at ${last_update_time? last_update_time.toLocaleString() : 'null'}, ${Intl.DateTimeFormat().resolvedOptions().timeZone}
 
-Version: v2024.11.26
+Version: v2024.11.28
 `;
 
 export const getIncorrectIdMessage = (value: string | null): string => `

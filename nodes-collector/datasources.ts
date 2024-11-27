@@ -55,10 +55,12 @@ async function getFastestNodesLinks(id: number, count: number = 50): Promise<Arr
   const logInfos: Array<LogInfo> = await loadAvaliableNodesFromSource(id);
   // Sort by ping and avg_speed
   logInfos.sort((a: LogInfo, b: LogInfo) => {
-    if (a.ping < b.ping) return -1;
-    if (a.ping > b.ping) return 1;
     if (a.avg_speed < b.avg_speed) return -1;
     if (a.avg_speed > b.avg_speed) return 1;
+    if (a.max_speed < b.max_speed) return -1;
+    if (a.max_speed > b.max_speed) return 1;
+    if (a.ping < b.ping) return -1;
+    if (a.ping > b.ping) return 1;
     return 0;
   });
   // console.log(logInfos.slice(0, count)); For debugging
