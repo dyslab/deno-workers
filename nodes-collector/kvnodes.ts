@@ -20,9 +20,12 @@ export async function loadNodesFromKv(kv: Deno.Kv, id: string): Promise<KvNodes 
   return null;
 }
 
-export async function loadNodesLastUpdatedTimeFromKv(kv: Deno.Kv): Promise<Date | null> {
-  const resp = await kv.get<Date>(["nodes", "last_updated_time"]);
-  return resp.value? resp.value : null;
+export async function loadNodesLastUpdatedInfoFromKv(kv: Deno.Kv): Promise<[number | null, Date | null]> {
+  const respId = await kv.get<number>(["nodes", "current_id"]);
+  const currentId : number | null = respId !== null? respId.value : null;
+  const respDatetime = await kv.get<Date>(["nodes", "last_updated_time"]);
+  const lastUpdatedTime : Date | null = respDatetime? respDatetime.value : null;
+  return [currentId, lastUpdatedTime];
 }
 
 export async function loadNodesCurrentIdFromKv(kv: Deno.Kv): Promise<number | null> {

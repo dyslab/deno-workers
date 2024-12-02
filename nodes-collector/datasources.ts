@@ -1,5 +1,6 @@
 const NODES_PAGE_LIST: Array<string> = [ 
   'https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/LogInfo.txt',
+  'https://v2cross.com/1884.html',
 ]
 
 /**
@@ -22,7 +23,7 @@ function getNodesPageLink(id: string | number): string | null {
 async function getLinksFromDataSource(id: number, count: number = 50): Promise<Array<string>> {
   switch (id) {
     case 0: return await getFastestNodesLinks(id, count);
-    case 1: break; // return (await fetchSourceFile(NODES_PAGE_LIST[id])).split('\n');
+    case 1: return await extractNodesFromV2Cross(id, count);
   }
   return [];
 }
@@ -72,24 +73,16 @@ async function getFastestNodesLinks(id: number, count: number = 50): Promise<Arr
 
 async function loadAvaliableNodesFromSource(id: number): Promise<Array<LogInfo>> {
   const logInfos: Array<LogInfo> = [];
-  if (id >= 0 || id < NODES_PAGE_LIST.length) {
+  if (id === 0) {
+    // const responseText: string = await fetchSourceFile(new URL('./testdata/LogInfo.txt', import.meta.url)); // For testing
     const responseText: string = await fetchSourceFile(NODES_PAGE_LIST[id]);
-    switch (id) {
-      case 0: {
-        // const responseText: string = await fetchSourceFile(new URL('./testdata/LogInfo.txt', import.meta.url)); // For testing
-        const logInfoStrings: Array<string> = responseText.split('\n');
-        for (const logInfoString of logInfoStrings) {
-          const logInfo: LogInfo | null = parseLogInfo(logInfoString);
-          if(logInfo) logInfos.push(logInfo);
-        }
-        return logInfos;
-      }
-      default:
-        return logInfos;
+    const logInfoStrings: Array<string> = responseText.split('\n');
+    for (const logInfoString of logInfoStrings) {
+      const logInfo: LogInfo | null = parseLogInfo(logInfoString);
+      if(logInfo) logInfos.push(logInfo);
     }
-  } else {
-    return logInfos;
   }
+  return logInfos;
 }
 
 function parseLogInfo(logInfo: string): LogInfo | null {
@@ -122,6 +115,44 @@ function parseLogInfo(logInfo: string): LogInfo | null {
   } else {
     return null;
   }
+}
+
+/**
+ * 
+ * The data types and functions below are designed to parse the following page(s)
+ * 
+ *  NODES_PAGE_LIST[1], 'https://v2cross.com/1884.html'
+ * 
+ */ 
+async function extractNodesFromV2Cross(id: number, count: number = 50): Promise<Array<string>> {
+  const links: Array<string> = [];
+  if (id === 1) {
+    // const responseText: string = await fetchSourceFile(new URL('./testdata/v2cross.com_1884.html', import.meta.url)); // For testing
+    const responseText: string = await fetchSourceFile(NODES_PAGE_LIST[id]);
+    const htmlLines: Array<string> = responseText.split('\n');
+    for (const htmlLine of htmlLines) {
+      const link: string | null = extractLinkFromV2CrossLine(htmlLine);
+      if (link) links.push(link);
+    }
+  }
+  return links.slice(0, count);
+}
+
+function extractLinkFromV2CrossLine(line: string): string | null {
+  function removeHtmlTag(str: string): string {
+    const regEx: RegExp = /<\/?[^>]+(>|$)/g;
+    return str.replace(regEx, '');
+  }
+
+  function validateLink(link: string): string | null {
+    const regEx: RegExp = /\[.+\]/;
+    const d: Array<string> | null = regEx.exec(link);
+    return d? null : link;
+  }
+
+  const regEx: RegExp = /((vmess)|(vless)|(trojan)|(ssr)|(ss))(:\/\/)(.+)/;
+  const d: Array<string> | null = regEx.exec(line);
+  return d? validateLink(d[1] + d[7] + removeHtmlTag(d[8])) : null;
 }
 
 export { setNextId, getNodesPageLink, getLinksFromDataSource }

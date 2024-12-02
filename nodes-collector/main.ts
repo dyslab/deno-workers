@@ -1,6 +1,6 @@
 import { getDefaultResponseMessage, getIncorrectIdMessage } from "./messages.ts";
 import { setNextId, getNodesPageLink, getLinksFromDataSource } from "./datasources.ts";
-import { KvNodes, loadNodesFromKv, loadNodesCurrentIdFromKv, loadNodesLastUpdatedTimeFromKv, setNodes, saveNodesToKv } from "./kvnodes.ts";
+import { KvNodes, loadNodesFromKv, loadNodesCurrentIdFromKv, loadNodesLastUpdatedInfoFromKv, setNodes, saveNodesToKv } from "./kvnodes.ts";
 
 const kv = await Deno.openKv();
 
@@ -20,13 +20,21 @@ Deno.serve({ port: 8602, hostname: 'localhost' }, async (request) => {
       });
     }
     else {
+      /*
+      // For new datasource testing
+      const nodesLinks : Array<string> = await getLinksFromDataSource(1, 88);
+      return new Response(nodesLinks.join('\n') + String(nodesLinks.length), { status: 200 });
+      */
       return new Response(getIncorrectIdMessage(id), { status: 200 });
     }
   } else if (request.url.endsWith("/favicon.ico")) {
     return await fetch(new URL('./assets/favicon.ico', import.meta.url));
   } else {
-    console.log(`Request ${request.url} at ${new Date().toISOString()}`);
-    return new Response(getDefaultResponseMessage(await loadNodesLastUpdatedTimeFromKv(kv)), { status: 200 })
+    // console.log(`Request ${request.url} at ${new Date().toISOString()}`); // For debugging
+    const [currentId, lastUpdatedTime] = await loadNodesLastUpdatedInfoFromKv(kv);
+    const strCurrentId: string = currentId !== null? String(currentId) : 'undefined';
+    const strLastUpdatedTime: string = lastUpdatedTime? lastUpdatedTime.toLocaleString() : 'undefined';
+    return new Response(getDefaultResponseMessage(strCurrentId, strLastUpdatedTime), { status: 200 })
   }
 });
 
