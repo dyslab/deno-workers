@@ -13,6 +13,11 @@ export function decodeUtf8(str: string): string {
   );
 }
 
+export function unescapeString(str: string): string {
+  return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+  .replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}
+
 export function encodeHexUnicode(str: string): string {
   const hexUnicodeArray: Array<string> | null = str.match(/\\[UuXX]([0-9A-F]{8})/gm);
   if (hexUnicodeArray) {

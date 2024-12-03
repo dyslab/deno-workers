@@ -1,5 +1,5 @@
 import * as YAML from '@std/yaml';
-import { decodeUtf8, encodeHexUnicode, addYamlHeaderComment } from "./unicode-helper.ts";
+import { decodeUtf8, unescapeString, encodeHexUnicode, addYamlHeaderComment } from "./unicode-helper.ts";
 
 // 有关各类代理协议的配置信息，请参考 https://stash.wiki/proxy-protocols/proxy-types
 interface V2rayNodeStructure {
@@ -68,7 +68,14 @@ interface ProtocolTrojanNode extends BaseNode {
   'udp': boolean;
   'tls': boolean;
   'skip-cert-verify': boolean;
+  'fingerprint': string;
+  'client-fingerprint': string;
   'alpn': Array<string>;
+  'smux': object;
+  'ss-opts':  object;
+  'reality-opts': object;
+  'ws-opts': object;
+  'http-opts': object;
 }
 
 interface MihomoTemplateProxyGroupsConfig {
@@ -172,7 +179,7 @@ function parseSSRNode(info: string): ProtocolSSRNode | null {
       const [encodedPassword, params] = matchResult[6].split('/?');
       if (encodedPassword) ssrNode['password'] = decodeURIComponent(atob(encodedPassword));
       if (params) {
-        const urlParams = new URLSearchParams(params);
+        const urlParams = new URLSearchParams(unescapeString(params));
         if (urlParams.has('group')) ssrNode['group'] = decodeURIComponent(atob(urlParams.get('group') as string));
         if (urlParams.has('remark')) ssrNode['name'] = decodeURIComponent(atob(urlParams.get('remark') as string));
         if (urlParams.has('obfsparam')) ssrNode['obfs-param'] = decodeURIComponent(atob(urlParams.get('obfsparam') as string));
@@ -219,8 +226,6 @@ function parseVmessNode(info: string): ProtocolVmessNode | null {
           if (decodedObj['host']) vmessNode['http-opts'] = { ...vmessNode['http-opts'], 'headers': { 'host': [decodedObj['host'] as string] }};
           break;
         }
-        default: 
-          break;
       }
       return vmessNode;
     }
@@ -242,9 +247,8 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
         name, server, port, uuid, 
         'type': 'vless' 
       };
-      const params: string = matchResult[4];
-      if (params) {
-        const urlParams = new URLSearchParams(params);
+      if (matchResult[4]) {
+        const urlParams = new URLSearchParams(unescapeString(matchResult[4]));
         if (urlParams.has('type')) vlessNode['network'] = urlParams.get('type') as string;
         if (urlParams.has('sni')) vlessNode['sni'] = urlParams.get('sni') as string;
         if (urlParams.has('security')) vlessNode['cipher'] = urlParams.get('security') as string;
@@ -259,8 +263,6 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
             if (urlParams.has('host')) vlessNode['http-opts'] = { ...vlessNode['http-opts'], 'headers': { 'host': [urlParams.get('host') as string] }};
             break;
           }
-          default: 
-            break;
         }  
       }
       return vlessNode;
@@ -285,12 +287,25 @@ function parseTrojanNode(info: string): ProtocolTrojanNode | null {
         'type': 'trojan',
       };
       if (matchResult[4]) {
-        const urlParams = new URLSearchParams(matchResult[4]);
+        const urlParams = new URLSearchParams(unescapeString(matchResult[4]));
+        if (urlParams.has('fp')) trojanNode['fingerprint'] = urlParams.get('fp') as string;
         if (urlParams.has('sni')) trojanNode['sni'] = urlParams.get('sni') as string;
         if (urlParams.has('type')) trojanNode['network'] = urlParams.get('type') as string;
         if (urlParams.has('security')) trojanNode['tls'] = ['tls', 'true'].includes((urlParams.get('security') as string).toLocaleLowerCase())? true: false;
         if (urlParams.has('alpn')) trojanNode['alpn'] = [urlParams.get('alpn') as string];
         if (urlParams.has('skip-cert-verify')) trojanNode['skip-cert-verify'] = (urlParams.get('skip-cert-verify') as string === 'true')? true: false;  
+        switch (trojanNode['network']) {
+          case 'ws': {
+            if (urlParams.has('path')) trojanNode['ws-opts'] = { ...trojanNode['ws-opts'], 'path': urlParams.get('path') as string };
+            if (urlParams.has('host')) trojanNode['ws-opts'] = { ...trojanNode['ws-opts'], 'headers': { 'host': urlParams.get('host') as string }};
+            break;
+          }
+          case 'http': {
+            if (urlParams.has('path')) trojanNode['http-opts'] = { ...trojanNode['http-opts'], 'path': [urlParams.get('path') as string] };
+            if (urlParams.has('host')) trojanNode['http-opts'] = { ...trojanNode['http-opts'], 'headers': { 'host': [urlParams.get('host') as string] }};
+            break;
+          }
+        }  
       }
       return trojanNode;
     }
