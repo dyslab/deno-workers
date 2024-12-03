@@ -1,6 +1,6 @@
 import { getDefaultResponseMessage, getIncorrectIdMessage } from "./messages.ts";
 import { setNextId, getNodesPageLink, getLinksFromDataSource } from "./datasources.ts";
-import { KvNodes, loadNodesFromKv, loadNodesCurrentIdFromKv, loadNodesLastUpdatedInfoFromKv, setNodes, saveNodesToKv } from "./kvnodes.ts";
+import { KvNodes, loadNodesFromKv, loadNodesCurrentIdFromKv, loadNodesLastUpdatedTimeFromKv, setNodes, saveNodesToKv } from "./kvnodes.ts";
 
 const kv = await Deno.openKv();
 
@@ -31,18 +31,19 @@ Deno.serve({ port: 8602, hostname: 'localhost' }, async (request) => {
     return await fetch(new URL('./assets/favicon.ico', import.meta.url));
   } else {
     // console.log(`Request ${request.url} at ${new Date().toISOString()}`); // For debugging
-    const [currentId, lastUpdatedTime] = await loadNodesLastUpdatedInfoFromKv(kv);
+    const currentId: number | null = await loadNodesCurrentIdFromKv(kv);
     const strCurrentId: string = currentId !== null? String(currentId) : 'undefined';
+    const lastUpdatedTime: Date | null = await loadNodesLastUpdatedTimeFromKv(kv);
     const strLastUpdatedTime: string = lastUpdatedTime? lastUpdatedTime.toLocaleString() : 'undefined';
     return new Response(getDefaultResponseMessage(strCurrentId, strLastUpdatedTime), { status: 200 })
   }
 });
 
-// Cron job runs at 11th minute every 11 hours (UTC)
-Deno.cron("Daily Fetch And Save", "11 */11 * * *", async () => {
-  let currentId : number | null = await loadNodesCurrentIdFromKv(kv);
-  currentId = (currentId !== null)? setNextId(currentId) : 0;
-  const nodesLinks : Array<string> = await getLinksFromDataSource(currentId, 88);
-  await saveNodesToKv(kv, setNodes(currentId, nodesLinks));
-  console.log(`Cron job finished at: ${new Date().toISOString()}. Saved ${nodesLinks.length} nodes. Set current Id to ${currentId}, Datasource: ${getNodesPageLink(currentId)}`);
+// Cron job runs at the 8th minute every 11 hours (UTC)
+Deno.cron("Daily Fetch And Save", "08 */11 * * *", async () => {
+  const currentId: number | null = await loadNodesCurrentIdFromKv(kv);
+  const numberCurrentId: number = (currentId !== null)? setNextId(currentId) : 0;
+  const nodesLinks : Array<string> = await getLinksFromDataSource(numberCurrentId, 88);
+  await saveNodesToKv(kv, setNodes(numberCurrentId, nodesLinks));
+  console.log(`Cron job finished at: ${new Date().toISOString()}. Saved ${nodesLinks.length} nodes. Set current Id to ${numberCurrentId}, Datasource: ${getNodesPageLink(numberCurrentId)}`);
 });
