@@ -1,5 +1,5 @@
 import * as YAML from '@std/yaml';
-import { decodeUtf8, unescapeString, encodeHexUnicode, addYamlHeaderComment } from "./unicode-helper.ts";
+import { decodeUtf8, encodeHexUnicode, addYamlHeaderComment } from "./unicode-helper.ts";
 
 // 有关各类代理协议的配置信息，请参考 https://stash.wiki/proxy-protocols/proxy-types
 interface V2rayNodeStructure {
@@ -179,7 +179,7 @@ function parseSSRNode(info: string): ProtocolSSRNode | null {
       const [encodedPassword, params] = matchResult[6].split('/?');
       if (encodedPassword) ssrNode['password'] = decodeURIComponent(atob(encodedPassword));
       if (params) {
-        const urlParams = new URLSearchParams(unescapeString(params));
+        const urlParams = new URLSearchParams(params);
         if (urlParams.has('group')) ssrNode['group'] = decodeURIComponent(atob(urlParams.get('group') as string));
         if (urlParams.has('remark')) ssrNode['name'] = decodeURIComponent(atob(urlParams.get('remark') as string));
         if (urlParams.has('obfsparam')) ssrNode['obfs-param'] = decodeURIComponent(atob(urlParams.get('obfsparam') as string));
@@ -248,7 +248,7 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
         'type': 'vless' 
       };
       if (matchResult[4]) {
-        const urlParams = new URLSearchParams(unescapeString(matchResult[4]));
+        const urlParams = new URLSearchParams(matchResult[4]);
         if (urlParams.has('type')) vlessNode['network'] = urlParams.get('type') as string;
         if (urlParams.has('sni')) vlessNode['sni'] = urlParams.get('sni') as string;
         if (urlParams.has('security')) vlessNode['cipher'] = urlParams.get('security') as string;
@@ -287,7 +287,7 @@ function parseTrojanNode(info: string): ProtocolTrojanNode | null {
         'type': 'trojan',
       };
       if (matchResult[4]) {
-        const urlParams = new URLSearchParams(unescapeString(matchResult[4]));
+        const urlParams = new URLSearchParams(matchResult[4]);
         if (urlParams.has('fp')) trojanNode['fingerprint'] = urlParams.get('fp') as string;
         if (urlParams.has('sni')) trojanNode['sni'] = urlParams.get('sni') as string;
         if (urlParams.has('type')) trojanNode['network'] = urlParams.get('type') as string;
