@@ -1,3 +1,5 @@
+# DEMO action script
+# This action is unavailable, due to the project setting does NOT enable Git Integration.
 name: Deploy project to Deno server on need
 
 on:
@@ -14,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  project-is-valid: ${{ !contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
+  project-is-valid: ${{ contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
 
 jobs:
   deploy-to-deno:
@@ -33,11 +35,11 @@ jobs:
         if: ${{ !env.project-is-valid }}
         run: echo "Project '${{ inputs.project }}' is invaild."
 
-      # - name: Build project
-      #  if: ${{ env.project-is-valid }}
-      #  run: |
-      #    echo "Deno version is ${{ steps.deno.outputs.deno-version }}"
-      #    cd ${{ github.workspace }}/${{ inputs.project }}
+      - name: Build step
+        if: ${{ env.project-is-valid }}
+        run: |
+          echo "Deno version is ${{ steps.deno.outputs.deno-version }}"
+          cd ${{ github.workspace }}/${{ inputs.project }}
       #    deno task build
 
       - name: Upload to Deno Deploy
@@ -46,4 +48,4 @@ jobs:
         with:
           project: ${{ inputs.project }}
           entrypoint: main.ts
-          root: ${{ inputs.project }}
+          root: "${{ github.workspace }}/${{ inputs.project }}"
