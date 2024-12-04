@@ -1,0 +1,37 @@
+name: Deploy project to Deno server on need
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Project to deploy [mihomo-subs-converter / nodes-collector / xlsx2csv-demo]'
+        default: 'mihomo-subs-converter'
+        required: true
+        type: string
+
+permissions:
+  id-token: write # This is required to allow the GitHub Action to authenticate with Deno Deploy.
+  contents: read
+
+jobs:
+  deploy-to-deno:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup Deno
+      uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+
+    - name: Install deployctl
+      run: |
+        echo "Deno version is ${{ steps.deno.outputs.deno-version }}"
+        deno install -gArf jsr:@deno/deployctl
+        deployctl --version
+      
+    - name: Project deployment
+      if: ${{ ['mihomo-subs-converter', 'nodes-collector', 'xlsx2csv-demo'].includes(inputs.name) }}
+      run: |
+        echo "Hello ${{ inputs.name }}"
+        cd ${{ github.workspace }}/${{ inputs.name }}
+        deno task deploy
