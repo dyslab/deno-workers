@@ -3,8 +3,8 @@ name: Deploy project to Deno server on need
 on:
   workflow_dispatch:
     inputs:
-      name:
-        description: 'Project to deploy [mihomo-subs-converter / nodes-collector / xlsx2csv-demo]'
+      project:
+        description: 'Project to deploy. Options: mihomo-subs-converter / nodes-collector / xlsx2csv-demo'
         default: 'mihomo-subs-converter'
         required: true
         type: string
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Setup Deno
+    - name: Setup deno
       uses: denoland/setup-deno@v2
       with:
         deno-version: v2.x
@@ -30,8 +30,13 @@ jobs:
         deployctl --version
       
     - name: Project deployment
-      if: ${{ ['mihomo-subs-converter', 'nodes-collector', 'xlsx2csv-demo'].includes(inputs.name) }}
+      if: ${{ contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
       run: |
-        echo "Hello ${{ inputs.name }}"
-        cd ${{ github.workspace }}/${{ inputs.name }}
+        echo "Deploy project '${{ inputs.project }}'"
+        cd ${{ github.workspace }}/${{ inputs.project }}
         deno task deploy
+
+    - name: Input not match
+      if: ${{ !contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
+      run: echo "Project '${{ inputs.project }}' is invaild."
+    
