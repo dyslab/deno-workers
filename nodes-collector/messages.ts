@@ -5,7 +5,7 @@ HINT: Remember to give this link a parameter 'id' to fetch a v2ray nodes file. ð
 
 KV[${currentId}] last updated at ${lastUpdatedTime}, ${Intl.DateTimeFormat().resolvedOptions().timeZone}
 
-Version: v2024.12.03
+Version: v2024.12.04
 `;
 
 export const getIncorrectIdMessage = (value: string | null): string => `
