@@ -16,27 +16,29 @@ permissions:
 jobs:
   deploy-to-deno:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Setup deno
-      uses: denoland/setup-deno@v2
-      with:
-        deno-version: v2.x
-
-    - name: Install deployctl
-      run: |
-        echo "Deno version is ${{ steps.deno.outputs.deno-version }}"
-        deno install -gArf jsr:@deno/deployctl
-        deployctl --version
-      
-    - name: Project deployment
-      if: ${{ contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
-      run: |
-        echo "Deploy project '${{ inputs.project }}'"
-        cd ${{ github.workspace }}/${{ inputs.project }}
-        deno task deploy
-
-    - name: Input not match
-      if: ${{ !contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
-      run: echo "Project '${{ inputs.project }}' is invaild."
-    
+      - name: Checkout repository
+        uses: actions/checkout@v4
+            
+      - name: Setup deno
+        id: deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+  
+      - name: Install deployctl
+        run: |
+          echo "Deno version is ${{ steps.deno.outputs.deno-version }}"
+          deno install -gArf jsr:@deno/deployctl
+          deployctl --version
+  
+      - name: Project deployment
+        if: ${{ contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
+        run: |
+          echo "Deploy project '${{ inputs.project }}'"
+          cd ${{ github.workspace }}/${{ inputs.project }}
+          deno task deploy
+  
+      - name: Input not match
+        if: ${{ !contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
+        run: echo "Project '${{ inputs.project }}' is invaild."
