@@ -40,7 +40,7 @@ Deno.serve({ port: 8602, hostname: 'localhost' }, async (request) => {
 });
 
 // Cron job runs at the 8th minute every 11 hours (UTC)
-Deno.cron("Daily Fetch And Save", "08 */11 * * *", async () => {
+Deno.cron("Daily Fetch And Save", "12 */12 * * *", async () => {
   const currentId: number | null = await loadNodesCurrentIdFromKv(kv);
   const numberCurrentId: number = (currentId !== null)? setNextId(currentId) : 0;
   const nodesLinks : Array<string> = await getLinksFromDataSource(numberCurrentId, 88);
