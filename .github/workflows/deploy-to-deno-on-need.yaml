@@ -13,6 +13,9 @@ permissions:
   id-token: write # This is required to allow the GitHub Action to authenticate with Deno Deploy.
   contents: read
 
+env:
+  project-is-valid: ${{ !contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
+
 jobs:
   deploy-to-deno:
     runs-on: ubuntu-latest
@@ -25,20 +28,22 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-  
-      - name: Install deployctl
-        run: |
-          echo "Deno version is ${{ steps.deno.outputs.deno-version }}"
-          deno install -gArf jsr:@deno/deployctl
-          deployctl --version
-  
-      - name: Project deployment
-        if: ${{ contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
-        run: |
-          echo "Deploy project '${{ inputs.project }}'"
-          cd ${{ github.workspace }}/${{ inputs.project }}
-          deno task deploy
-  
+
       - name: Input not match
-        if: ${{ !contains(fromJSON('["mihomo-subs-converter", "nodes-collector", "xlsx2csv-demo"]'), inputs.project) }}
+        if: ${{ !env.project-is-valid }}
         run: echo "Project '${{ inputs.project }}' is invaild."
+
+      # - name: Build project
+      #  if: ${{ env.project-is-valid }}
+      #  run: |
+      #    echo "Deno version is ${{ steps.deno.outputs.deno-version }}"
+      #    cd ${{ github.workspace }}/${{ inputs.project }}
+      #    deno task build
+
+      - name: Upload to Deno Deploy
+        if: ${{ env.project-is-valid }}
+        uses: denoland/deployctl@v1
+        with:
+          project: ${{ inputs.project }}
+          entrypoint: main.ts
+          root: ${{ inputs.project }}
