@@ -116,6 +116,7 @@ proxy-groups:
       # - v2rayse_test_3
       # - v2rayse_test_4
       # - v2rayse_test_5
+      - <<INSERT-PROXIES>>
   - name: ♻️ 自动选择
     type: url-test
     url: http://www.gstatic.com/generate_204
@@ -127,6 +128,7 @@ proxy-groups:
       # - v2rayse_test_3
       # - v2rayse_test_4
       # - v2rayse_test_5
+      - <<INSERT-PROXIES>>
   - name: 🌍 国外媒体
     type: select
     proxies:
@@ -138,6 +140,7 @@ proxy-groups:
       # - v2rayse_test_3
       # - v2rayse_test_4
       # - v2rayse_test_5
+      - <<INSERT-PROXIES>>
   - name: 📲 电报信息
     type: select
     proxies:
@@ -148,6 +151,7 @@ proxy-groups:
       # - v2rayse_test_3
       # - v2rayse_test_4
       # - v2rayse_test_5
+      - <<INSERT-PROXIES>>
   - name: Ⓜ️ 微软服务
     type: select
     proxies:
@@ -158,6 +162,7 @@ proxy-groups:
       # - v2rayse_test_3
       # - v2rayse_test_4
       # - v2rayse_test_5
+      - <<INSERT-PROXIES>>
   - name: 🍎 苹果服务
     type: select
     proxies:
@@ -168,6 +173,7 @@ proxy-groups:
       # - v2rayse_test_3
       # - v2rayse_test_4
       # - v2rayse_test_5
+      - <<INSERT-PROXIES>>
   - name: 🎯 全球直连
     type: select
     proxies:
@@ -195,6 +201,7 @@ proxy-groups:
       # - v2rayse_test_3
       # - v2rayse_test_4
       # - v2rayse_test_5
+      - <<INSERT-PROXIES>>
 rules:
   - DOMAIN-SUFFIX,acl4.ssr,🎯 全球直连
   - DOMAIN-SUFFIX,ip6-localhost,🎯 全球直连

@@ -30,11 +30,11 @@ function isTrueOrYes(value: string | null): boolean {
   return (value && ['true', 'yes'].includes(value.toLowerCase()))? true : false;
 }
 
-async function v2rayToMihomo(link: string, b64DecodeFlag: boolean): Promise<string> {
+async function v2rayToMihomo(link: string, b64DecodeFlag: boolean, templateId: number): Promise<string> {
   try {
     const stroageNodes : Array<string> | null =  await getNodesFromStorage(link, kvStorage);
     if (stroageNodes) {
-      return await convertNodesToMihomo(stroageNodes);
+      return await convertNodesToMihomo(stroageNodes, templateId);
     }
     const resp: Response = await fetch(link);
     let v2rayText: string = await resp.text();
@@ -49,7 +49,7 @@ async function v2rayToMihomo(link: string, b64DecodeFlag: boolean): Promise<stri
       }
       if (vaildV2rayNodes.length > 0) {
         await insertNodesToStorage(link, vaildV2rayNodes, kvStorage)
-        return await convertNodesToMihomo(vaildV2rayNodes);
+        return await convertNodesToMihomo(vaildV2rayNodes, templateId);
       } else return 'Error: Node resolution failed. Change the decoding option and try again. 🙁'
     } else return 'Error: Response not ok 🙁';
   } catch (error) {
@@ -71,10 +71,11 @@ async function getRouter(request: Request): Promise<Response> {
     const url: URL = new URL(request.url);
     if (url.pathname === '/') {
       // 处理根路径请求
-      const link: string = decodeURIComponent(url.searchParams.get("link") || "");
+      const link: string = decodeURIComponent(url.searchParams.get("link")?? "");
       const b64DecodeFlag: boolean = isTrueOrYes(url.searchParams.get("base64"));
+      const templateId: number = parseInt(url.searchParams.get("template")?? '0');
       if (link) {
-        const returnText: string = await v2rayToMihomo(link, b64DecodeFlag);
+        const returnText: string = await v2rayToMihomo(link, b64DecodeFlag, templateId);
         return new Response(returnText, { status: 200 });
       }
     } else {

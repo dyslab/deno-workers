@@ -1,5 +1,11 @@
 import * as YAML from '@std/yaml';
-import { decodeUtf8, encodeHexUnicode, addYamlHeaderComment } from "./unicode-helper.ts";
+import { decodeUtf8, encodeHexUnicode } from "./unicode-helper.ts";
+
+const TEMPLATE_LIST: Array<string> = [
+  './template/v2rayse_20241116150227.yaml',
+  './template/cffx_20241207.yaml',
+  './template/zyfxs_20241207.yaml',
+];
 
 // 有关各类代理协议的配置信息，请参考 https://stash.wiki/proxy-protocols/proxy-types
 interface V2rayNodeStructure {
@@ -99,14 +105,38 @@ function parseV2rayNode(node: string): V2rayNodeStructure | null {
 }
 
 // V2ray nodes 
-async function getMihomoTemplateObject(): Promise<MihomoTemplateProxiesConfig | null> {
+async function getMihomoTemplateObject(templateId: number): Promise<MihomoTemplateProxiesConfig | null> {
+  let templateFilePath: string = TEMPLATE_LIST[0];
+  if (templateId > 0 && templateId < TEMPLATE_LIST.length) {
+    templateFilePath = TEMPLATE_LIST[templateId];
+  }
   try {
-    const templateText: string = await Deno.readTextFile("./template/v2rayse_20241116150227.yaml");
+    const templateText: string = await Deno.readTextFile(templateFilePath);
     return YAML.parse(templateText) as MihomoTemplateProxiesConfig;
   } catch (error) {
     console.error(error);
     return null;
   }
+}
+
+function addYamlHeaderComment(str: string, templateId: number): string {
+  let yamlHeaderComment: string = '';
+  switch (templateId) {
+    case 1: {
+      yamlHeaderComment += '# 模板来源：cfmem.com\n' + '# 名称序号：DySLaB - 1\n';
+      break;
+    }
+    case 2: {
+      yamlHeaderComment += '# 模板来源：youtube.com/@ZYFXS\n' + '# 名称序号：DySLaB - 2\n';
+      break;
+    }
+    default: {
+      yamlHeaderComment += '# 模板来源：v2rayse.com\n' + '# 名称序号：DySLaB - 0\n';
+      break;
+    }
+  }
+  return yamlHeaderComment + `# 生成时间：${new Date()}\n` + '# 节点类型：ss / ssr / vmess / vless / trojan\n'
+  + '# 不要随意改变关键字，否则会导致出错\n' + '\n' + str;
 }
 
 function isCipherValidForSSNode(cipher: string): boolean {
@@ -315,7 +345,7 @@ function parseTrojanNode(info: string): ProtocolTrojanNode | null {
   return null;
 }
 
-async function convertNodesToMihomo(nodes: Array<string>): Promise<string> {
+async function convertNodesToMihomo(nodes: Array<string>, templateId: number): Promise<string> {
   const targetNodes: Array<ProtocolSSNode | BaseNode> = [];
   for (const node of nodes) {
     const v2rayNode: V2rayNodeStructure | null = parseV2rayNode(node);
@@ -357,18 +387,23 @@ async function convertNodesToMihomo(nodes: Array<string>): Promise<string> {
     if (node instanceof Object) node['name'] += `@DySLaB_${i + 1}`;
   }
   // 获取模板，导入节点，输出 Mihomo 节点文件 (YAML格式)
-  const templateObj: MihomoTemplateProxiesConfig | null = await getMihomoTemplateObject();
+  const templateObj: MihomoTemplateProxiesConfig | null = await getMihomoTemplateObject(templateId);
   if (templateObj) {
     templateObj['proxies'] = targetNodes;
     const targetNodesName: Array<string> = targetNodes.map((node) => node['name']);
     for (const proxyGroup of templateObj['proxy-groups']) {
       if (proxyGroup['proxies'] === null) {
         proxyGroup['proxies'] = targetNodesName;
-      } else if (!proxyGroup['proxies'].includes('REJECT')) {
-        proxyGroup['proxies'].push(...targetNodesName);
+      } else {
+        // 仅在含有 '<<INSERT-PROXIES>>' 标记的 proxy-groups 代理组中插入节点
+        const newProxies: Array<string> = proxyGroup['proxies'].filter((proxyName) => proxyName !== '<<INSERT-PROXIES>>');
+        if (newProxies.length < proxyGroup['proxies'].length) {
+          newProxies.push(...targetNodesName);
+          proxyGroup['proxies'] = newProxies;
+        }
       }
     }
-    return addYamlHeaderComment(encodeHexUnicode(YAML.stringify(templateObj)));
+    return addYamlHeaderComment(encodeHexUnicode(YAML.stringify(templateObj)), templateId);
   } else return '';
 }
 
