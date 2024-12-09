@@ -1,10 +1,10 @@
-export interface KvNodes {
+interface KvNodes {
   id: number;
   nodes: Array<string>;
   updated_time: Date;
 }
 
-export function setNodes(id: number, nodes: Array<string>): KvNodes {
+export function setKvNodes(id: number, nodes: Array<string>): KvNodes {
   return {
     id: id,
     nodes: nodes,
@@ -12,12 +12,10 @@ export function setNodes(id: number, nodes: Array<string>): KvNodes {
   };
 }
 
-export async function loadNodesFromKv(kv: Deno.Kv, id: string): Promise<KvNodes | null> {
-  const resp = await kv.get<KvNodes>(["nodes", String(id)]);
-  if (resp.value) {
-    return resp.value;
-  }
-  return null;
+export async function loadNodesFromKv(kv: Deno.Kv, id: string): Promise<Array<string> | null> {
+  const resp = await kv.get<Array<string>>(["nodes", String(id)]);
+  if (resp.value) return resp.value;
+  else            return null;
 }
 
 export async function loadNodesLastUpdatedTimeFromKv(kv: Deno.Kv): Promise<Date | null> {
@@ -32,7 +30,7 @@ export async function loadNodesCurrentIdFromKv(kv: Deno.Kv): Promise<number | nu
 
 export async function saveNodesToKv(kv: Deno.Kv, nodes: KvNodes) {
   const resp = await kv.atomic()
-   .set(["nodes", String(nodes.id)], nodes)
+   .set(["nodes", String(nodes.id)], nodes.nodes)
    .set(["nodes", "current_id"], nodes.id)
    .set(["nodes", "last_updated_time"], nodes.updated_time)
    .commit();
