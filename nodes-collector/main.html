@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Nodes Collector On Deno</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <link rel="stylesheet" href="/custom.css">
+  </head>
+  <body>
+    <section class="container">
+      <ul class="custom-header">
+        <li><img alt="NC" src="/favicon-32x32.png" /></li>
+        <li>Nodes Collector On Deno</li>
+      </ul>
+      <p class="notice">
+        This demo page is powered and deployed by <a href="https://deno.com/" target="_blank">Deno</a> with its free tier. All datasources which fetched by the demo were developed and maintained by other talented and warmhearted developers. I hereby would like to give them thumbs up and also contribute my respectful thanks to all of them. ❤️
+      </p>
+      <p>
+        Avaliable Subscription Links: ${subsLink}
+      </p>
+      <p>
+        Last updated for <a class="custom-link" href="/?id=${currentId}">🆔 ${currentId}</a> at <i>${lastUpdatedTime}</i>.
+      </p>
+      <blockquote>
+        <b>Edge Server Information</b><br><br>
+        Server IP: <u>${ip}</u><br>
+        ISP: ${isp}<br>
+        <!--ASN: <u>${asn}</u><br>-->
+        Organization: ${organization}<br>
+        Location: ${country}, ${continent_code}<br>
+        Timezone: ${timezone}
+      </blockquote>
+    </section>
+    <div class="custom-footer">
+      This webpage powered by <a href="https://simplecss.org/" target="_blank">Simple CSS</a>.
+      IP information powered by <a href="https://ip.sb/api/" target="_blank">IP.SB Free API</a>.
+      <br>
+      <div class="custom-version">Html Version: v2024.12.22</div>
+    </div>
+  </body>
+</html>

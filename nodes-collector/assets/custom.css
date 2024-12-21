@@ -1,0 +1,37 @@
+ul.custom-header {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 2rem;
+}
+
+ul.custom-header li:first-child {
+  margin-left: 0;
+}
+
+ul.custom-header li {
+  margin-left: 1rem;
+}
+
+a.custom-link {
+  color: #258c09;
+  text-decoration: none;
+  text-underline-offset: 0.4rem;
+}
+a.custom-link:hover {
+  color: #27a404;
+  text-decoration: underline dotted;
+}
+
+div.custom-footer {
+  color: #444444;
+}
+
+div.custom-version {
+  width: 100%;
+  text-align: center;
+  margin: 1rem 0;
+}

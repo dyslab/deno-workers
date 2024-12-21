@@ -8,6 +8,11 @@ const NODES_PAGE_LIST: Array<string> = [
  * Common functions
  * 
  */
+
+function getNodesPageList(): string[] {
+  return NODES_PAGE_LIST;
+}
+
 function setNextId(id: number): number {
   return (id + 1) % NODES_PAGE_LIST.length;
 }
@@ -155,4 +160,4 @@ function extractLinkFromV2CrossLine(line: string): string | null {
   return d? validateLink(d[1] + d[7] + removeHtmlTag(d[8])) : null;
 }
 
-export { setNextId, getNodesPageLink, getLinksFromDataSource }
+export { getNodesPageList, setNextId, getNodesPageLink, getLinksFromDataSource }

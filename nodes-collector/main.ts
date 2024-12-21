@@ -1,5 +1,5 @@
-import { getDefaultResponseMessage, getIncorrectIdMessage } from "./messages.ts";
-import { setNextId, getNodesPageLink, getLinksFromDataSource } from "./datasources.ts";
+import { getDefaultResponseHtml, /*getDefaultResponseText, */getIncorrectIdMessage, getGeoIPInformation } from "./messages.ts";
+import { getNodesPageList, setNextId, getNodesPageLink, getLinksFromDataSource } from "./datasources.ts";
 import { loadNodesFromKv, loadNodesCurrentIdFromKv, loadNodesLastUpdatedTimeFromKv, setKvNodes, saveNodesToKv } from "./kvnodes.ts";
 
 const kv = await Deno.openKv();
@@ -29,15 +29,44 @@ Deno.serve({ port: 8602, hostname: 'localhost' }, async (request) => {
       */
       return new Response(getIncorrectIdMessage(id), { status: 200 });
     }
-  } else if (request.url.endsWith("/favicon.ico")) {
-    return await fetch(new URL('./assets/favicon.ico', import.meta.url));
   } else {
     // console.log(`Request ${request.url} at ${new Date().toISOString()}`); // For debugging
+    for await (const dirEntry of Deno.readDir('./assets')) {
+      // return the file if its filename exists in the assets directory
+      if (request.url.endsWith(dirEntry.name)) return await fetch(new URL(`./assets/${dirEntry.name}`, import.meta.url));
+    }
+    // const clientIP: string | null = request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for");
     const currentId: number | null = await loadNodesCurrentIdFromKv(kv);
-    const strCurrentId: string = currentId !== null? String(currentId) : 'undefined';
     const lastUpdatedTime: Date | null = await loadNodesLastUpdatedTimeFromKv(kv);
-    const strLastUpdatedTime: string = lastUpdatedTime? lastUpdatedTime.toLocaleString() : 'undefined';
-    return new Response(getDefaultResponseMessage(strCurrentId, strLastUpdatedTime), { status: 200 })
+    const geoIP: Map<string, string | number> = await getGeoIPInformation();
+    const htmlContent: string = await getDefaultResponseHtml('./main.html', {
+      links: getNodesPageList(),
+      strCurrentId: String(currentId),
+      strLastUpdatedTime: lastUpdatedTime? lastUpdatedTime.toLocaleString() : 'null',
+      geoIP
+    });
+    return new Response(htmlContent, { 
+      status: 200,
+      headers: {
+        'Accept-Encoding': 'gzip',
+        'Content-Type': 'text/html; charset=utf-8',
+        // 'Cache-Control': 'max-age=3600',
+      }
+    });
+    /*
+    const textContent: string = getDefaultResponseText(
+      String(currentId), 
+      lastUpdatedTime? lastUpdatedTime.toLocaleString() : 'null'
+    );
+    return new Response(textContent, { 
+      status: 200,
+      headers: {
+        'Accept-Encoding': 'gzip',
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'max-age=3600',
+      }
+    });
+    */
   }
 });
 
