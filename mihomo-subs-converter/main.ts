@@ -97,6 +97,6 @@ Deno.serve({ port: 8603, hostname: 'localhost' }, async (request) =>
   new Response(`Request method ${request.method} not support.`, { status: 200 })
 );
 
-Deno.cron('Auto remove expired nodes from storage daily', '33 11 * * *', async () => {
+Deno.cron('Auto remove expired nodes from storage daily', '33 03 * * *', async () => {
   await removeExpiredNodesFromStorage(kvStorage);
 });

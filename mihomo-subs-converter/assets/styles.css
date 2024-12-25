@@ -12,9 +12,10 @@ input.link {
   max-width: 60rem;
   padding: 0.5rem;
 }
-.check-span {
-  margin-right: 1.5rem;
-  line-height: 2.5rem;
+select {
+  font-size: 1rem;
+  padding: 0.1rem;
+  margin-bottom: 0.5rem;
 } 
 input[type="submit"] {
   font-size: 1rem;

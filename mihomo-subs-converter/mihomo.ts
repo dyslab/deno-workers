@@ -57,10 +57,16 @@ interface ProtocolVlessNode extends BaseNode {
   'server': string;
   'port': number;
   'sni': string;
+  'servername': string;
+  'udp': boolean;
   'tls': boolean;
   'uuid': string;
   'network': string;
+  'fingerprint': string;
+  'client-fingerprint': string; // Options: chrome, firefox, safari, iOS, android, edge, 360, qq, random If random is selected, a modern browser fingerprint will be generated based on Cloudflare Radar data.
   'skip-cert-verify': boolean;
+  'encryption': string;
+  'security': string;
   'ws-opts':  object;
   'http-opts': object;
 }
@@ -275,13 +281,32 @@ function parseVlessNode(info: string): ProtocolVlessNode | null {
       const name: string = matchResult[5];
       const vlessNode: ProtocolVlessNode = <ProtocolVlessNode>{ 
         name, server, port, uuid, 
-        'type': 'vless' 
+        'type': 'vless',
+        'udp': true
       };
       if (matchResult[4]) {
         const urlParams = new URLSearchParams(matchResult[4]);
         if (urlParams.has('type')) vlessNode['network'] = urlParams.get('type') as string;
         if (urlParams.has('sni')) vlessNode['sni'] = urlParams.get('sni') as string;
-        if (urlParams.has('security')) vlessNode['cipher'] = urlParams.get('security') as string;
+        if (urlParams.has('servername')) vlessNode['servername'] = urlParams.get('servername') as string;
+        if (urlParams.has('fp')) vlessNode['fingerprint'] = urlParams.get('fp') as string;
+        if (urlParams.has('client-fp')) vlessNode['client-fingerprint'] = urlParams.get('client-fp') as string;
+        if (urlParams.has('encryption')) vlessNode['encryption'] = urlParams.get('encryption') as string;
+        if (urlParams.has('security')) {
+          vlessNode['security'] = urlParams.get('security') as string;
+          if (vlessNode['security'] === 'tls') {
+            vlessNode['tls'] = true
+            vlessNode['skip-cert-verify'] = false
+          } else {
+            vlessNode['tls'] = false;
+            vlessNode['skip-cert-verify'] = true
+          }
+        }
+        // 再次检查 url 参数是否包含 skip-cert-verify ？如果包含则按参数值设置 skip-cert-verify
+        if (urlParams.has('skip-cert-verify')) {
+          const strSkipCertVerify: string =  urlParams.get('skip-cert-verify') as string;
+          vlessNode['skip-cert-verify'] = (strSkipCertVerify !== 'false')? true: false;
+        }
         switch (vlessNode['network']) {
           case 'ws': {
             if (urlParams.has('path')) vlessNode['ws-opts'] = { ...vlessNode['ws-opts'], 'path': urlParams.get('path') as string };
