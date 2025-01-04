@@ -2,6 +2,7 @@ import { decodeUtf8 } from "./unicode-helper.ts";
 import { isValidNode, detectStorage, getNodesFromStorage, insertNodesToStorage, removeExpiredNodesFromStorage } from "./storage.ts";
 import { convertNodesToMihomo } from "./mihomo.ts";
 import * as FIX from "./fix.ts";
+import * as REMOVE from "./remove.ts";
 
 // 检测存储类型, 优先使用 localStorage, 其次使用 Deno.Kv, 都不可用则返回 null
 const kvStorage = await detectStorage();
@@ -83,6 +84,8 @@ async function getRouter(request: Request): Promise<Response> {
       switch (url.pathname) {
         case '/fix':
           return await FIX.getHandler(request);
+        case '/remove':
+          return await REMOVE.getHandler(request, kvStorage);
         default:
           return new Response(`Request path ${url.pathname} not support.`, { status: 404 });
       }
@@ -97,6 +100,6 @@ Deno.serve({ port: 8603, hostname: 'localhost' }, async (request) =>
   new Response(`Request method ${request.method} not support.`, { status: 200 })
 );
 
-Deno.cron('Auto remove expired nodes from storage daily', '33 03 * * *', async () => {
+Deno.cron('Auto remove expired nodes from storage daily', '49 19 * * *', async () => {
   await removeExpiredNodesFromStorage(kvStorage);
 });

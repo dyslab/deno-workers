@@ -1,3 +1,5 @@
+import { EXPIRE_IN_MS } from "./storage.ts";
+
 interface NodesInfoLocalStorage {
   nodes: Array<string>;
   timestamp: number;
@@ -53,7 +55,7 @@ function removeExpiredNodesFromLocalStorage() : number {
       const nodesValue: string | null = localStorage.getItem(key);
       if (nodesValue) {
         const nodesObj : NodesInfoLocalStorage = JSON.parse(nodesValue) as NodesInfoLocalStorage;
-        if (nodesObj.timestamp && (Date.now() - nodesObj.timestamp) > 86400000) { // 86400000 ms = 1 day
+        if (nodesObj.timestamp && (Date.now() - nodesObj.timestamp) > EXPIRE_IN_MS) {
           deletedCount++;
           localStorage.removeItem(key);
         } else if (nodesObj.timestamp) newKeyListArray.push(key);
@@ -69,8 +71,8 @@ function getNodesFromLocalStorage(link: string) : Array<string> | null {
   const nodesValue: string | null = localStorage.getItem(key);
   if (nodesValue) {
     const nodesObj : NodesInfoLocalStorage = JSON.parse(nodesValue) as NodesInfoLocalStorage;
-    if (nodesObj.timestamp && (Date.now() - nodesObj.timestamp) < 86400000)  { // 86400000 ms = 1 day
-      console.log(`Get nodes of '${link}' from localStorage. Timestamp: ${nodesObj.timestamp}`);
+    if (nodesObj.timestamp && (Date.now() - nodesObj.timestamp) < EXPIRE_IN_MS)  {
+      console.log(`Get nodes of [${key}](${link}) from localStorage. Timestamp: ${nodesObj.timestamp}`);
       return nodesObj.nodes;
     } else {
       localStorage.removeItem(key);
@@ -84,7 +86,7 @@ function getNodesFromLocalStorage(link: string) : Array<string> | null {
 function insertNodesToLocalStorage(link: string, nodes: Array<string>) : void {
   const timestamp: number = Date.now();
   const key: string = getUrlID(link);
-  console.log(`Insert nodes of '${link}' to localStorage. Timestamp: ${timestamp}`);
+  console.log(`Insert nodes of [${key}](${link}) to localStorage. Timestamp: ${timestamp}`);
   localStorage.setItem(key, JSON.stringify({
     nodes,
     timestamp
@@ -92,4 +94,15 @@ function insertNodesToLocalStorage(link: string, nodes: Array<string>) : void {
   addKeyToLocalStorageKeyList(key);
 }
 
-export { isLocalStorageAvaliable, getNodesFromLocalStorage, insertNodesToLocalStorage, removeExpiredNodesFromLocalStorage };
+// This function used by the function removeKeyFromStorage() in './storage.ts'
+function removeKey(key: string) : string {
+  try {
+    localStorage.removeItem(key);
+    removeKeyFromLocalStorageKeyList(key);
+    return `Remove key [${key}] from localStorage successfully at ${new Date()}.`;  
+  } catch (error) {
+    return error as string;
+  }
+}
+
+export { isLocalStorageAvaliable, getNodesFromLocalStorage, insertNodesToLocalStorage, removeExpiredNodesFromLocalStorage, removeKey };

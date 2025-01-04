@@ -3,6 +3,14 @@ import * as KV from "./_kv.ts";
 
 type StorageType = 'localStroage' | Deno.Kv | null;
 
+/**
+ * The value 'EXPIRE_IN_MS' sets when the keys will be expired (or deleted automatically).
+ * The value is in milliseconds. Please be aware of that it SHOULD be a positive integer.
+ * In case the value <= 0, addKeyToKvKeyList() in '_kv.ts' will store the key value and 
+ * the key list. (The operations for KV are same as LocalStorage)
+ */
+const EXPIRE_IN_MS: number = 86400000; // default to 1 day (86400000 ms)
+
 function isValidNode(node: string): boolean {
   return /(\w{2,10}):\/\/(.+)/.test(node);
 }
@@ -56,4 +64,18 @@ async function removeExpiredNodesFromStorage(kv: StorageType): Promise<void> {
   }
 }
 
-export { isValidNode, detectStorage, getNodesFromStorage, insertNodesToStorage, removeExpiredNodesFromStorage };
+async function removeKeyFromStorage(key: string, kv: StorageType): Promise<string> {
+  if (kv === 'localStroage') {
+    return LS.removeKey(key);
+  } else if (kv instanceof Deno.Kv) {
+    return await KV.removeKey(key, kv);
+  } else {
+    return 'Storage type unknown.';
+  }
+}
+
+export type { StorageType };
+export {
+  isValidNode, detectStorage, getNodesFromStorage, insertNodesToStorage,
+  removeExpiredNodesFromStorage, removeKeyFromStorage, EXPIRE_IN_MS
+};
